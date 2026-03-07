@@ -10,6 +10,7 @@ yarn-error.log*
 
 # dotenv environment variables file
 .env
+.env.*
 
 # OS generated files
 .DS_Store
@@ -21,3 +22,7 @@ coverage/
 # Optional: build folder if any
 dist/
 build/
+
+# Uploads
+backend/uploads/
+uploads/
