@@ -2,21 +2,21 @@ import React, { useEffect, useState, useContext } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { Container, Row, Col, Card, Spinner, Alert, Button, Badge } from 'react-bootstrap';
-import { FaShoppingCart, FaBoxOpen, FaStar } from 'react-icons/fa';
+import { FaShoppingCart, FaBoxOpen, FaStar, FaSearch } from 'react-icons/fa';
 import { CartContext } from '../../../components/CartContext';
 import FilterComponent from '../../../components/Filter';
 import '../../../App.css';
 
-// Logo pink color palette
+// Navbar color palette
 const logoColors = {
-  primary: '#FF69B4', // Hot pink - main logo color
-  secondary: '#FF1493', // Deep pink - darker shade
-  light: '#FFB6C1', // Light pink - for accents
-  dark: '#C71585', // Medium violet red - very dark pink
-  background: '#FFF5F7', // Super light pink - almost white
-  lighterBg: '#FFF9FA', // Even lighter - subtle pink tint
-  gradient: 'linear-gradient(135deg, #FF69B4 0%, #FF1493 100%)', // Pink gradient from logo
-  softGradient: 'linear-gradient(135deg, #FFF0F3 0%, #FFE4E8 100%)', // Very soft pink gradient
+  primary: '#fe7e8b', // Navbar primary color
+  secondary: '#e65c70', // Navbar secondary color
+  light: '#ffd1d4', // Navbar light color
+  dark: '#d64555', // Navbar dark color
+  background: '#fff5f6', // Super light - almost white
+  lighterBg: '#fff9fa', // Even lighter - subtle tint
+  gradient: 'linear-gradient(135deg, #fe7e8b 0%, #e65c70 100%)', // Navbar gradient
+  softGradient: 'linear-gradient(135deg, #fff5f6 0%, #ffd1d4 100%)', // Very soft gradient
 };
 
 export default function CategoryProducts() {
@@ -34,18 +34,33 @@ export default function CategoryProducts() {
 
     const fetchProducts = async () => {
       try {
+        setLoading(true);
+        setError(null);
         const res = await axios.get(`${process.env.REACT_APP_API_URL}/category/${encodeURIComponent(categoryName)}`);
-        const productsWithDefaults = res.data.map(product => ({
-          ...product,
-          stock: product.stock !== undefined ? product.stock : Math.floor(Math.random() * 16) + 5,
-          rating: product.rating || (Math.random() * 1 + 4).toFixed(1)
-        }));
-        setProducts(productsWithDefaults);
-        setFilteredProducts(productsWithDefaults);
+
+        // Check if response data is empty
+        if (!res.data || res.data.length === 0) {
+          setProducts([]);
+          setFilteredProducts([]);
+        } else {
+          const productsWithDefaults = res.data.map(product => ({
+            ...product,
+            stock: product.stock !== undefined ? product.stock : Math.floor(Math.random() * 16) + 5,
+            rating: product.rating || (Math.random() * 1 + 4).toFixed(1),
+            createdAt: product.createdAt ? new Date(product.createdAt) : new Date()
+          }));
+          setProducts(productsWithDefaults);
+          setFilteredProducts(productsWithDefaults);
+        }
       } catch (err) {
-        setError(err.message || 'Failed to load products');
-        setProducts([]);
-        setFilteredProducts([]);
+        console.error('Error fetching products:', err);
+        // Don't show error for 404 or empty responses
+        if (err.response?.status === 404) {
+          setProducts([]);
+          setFilteredProducts([]);
+        } else {
+          setError(err.message || 'Failed to load products');
+        }
       } finally {
         setLoading(false);
       }
@@ -69,7 +84,7 @@ export default function CategoryProducts() {
           sorted.sort((a, b) => b.rating - a.rating);
           break;
         case 'newest':
-          sorted.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+          sorted.sort((a, b) => b.createdAt - a.createdAt);
           break;
         default:
           break;
@@ -93,7 +108,7 @@ export default function CategoryProducts() {
   const getProductImage = (product) => {
     if (!product?.image?.[0]) return '/placeholder.jpg';
     if (product.image[0].startsWith('http')) return product.image[0];
-    return `${process.env.REACT_APP_API_URL}${product.image[0]}`;
+    return `${process.env.REACT_APP_API_URL}${product.image[0].startsWith('/') ? '' : '/'}${product.image[0]}`;
   };
 
   const renderProductCard = (product) => (
@@ -192,18 +207,18 @@ export default function CategoryProducts() {
             marginBottom: '0.5rem',
             color: '#718096'
           }}>
-            {product.category || 'Uncategorized'}
+            {typeof product.category === 'object' ? product.category.name : (product.category || 'Uncategorized')}
           </Card.Text>
           <div className="mt-auto">
             <div className="d-flex justify-content-between align-items-center mb-2">
               <div className="price">
                 {product.discountedPrice < product.originalPrice && (
                   <span className="original-price text-muted text-decoration-line-through me-2" style={{ fontSize: '0.8rem' }}>
-                    ${product.originalPrice}
+                    Rs. {product.originalPrice}
                   </span>
                 )}
                 <span className="current-price fw-bold" style={{ color: logoColors.primary, fontSize: '1.1rem' }}>
-                  ${product.discountedPrice || product.price}
+                  Rs. {product.discountedPrice || product.price}
                 </span>
               </div>
               <div className="rating" style={{ fontSize: '0.85rem' }}>
@@ -248,7 +263,7 @@ export default function CategoryProducts() {
                 product_id: product.id,
                 price: product.price,
                 name: product.name,
-                category: product.category,
+                category: typeof product.category === 'object' ? product.category.name : product.category,
                 stock_status: 'in_stock'
               }) : undefined}
             >
@@ -278,7 +293,7 @@ export default function CategoryProducts() {
       <Container>
         <div className="page-header-wrapper mb-4 mb-md-5 text-center">
           <h1 className="page-header" style={{ color: logoColors.dark, textTransform: 'capitalize' }}>
-            {categoryName}
+            Featuring <span style={{ color: logoColors.primary }}>{categoryName}</span>
           </h1>
 
           {/* Decorative line under header */}
@@ -290,10 +305,12 @@ export default function CategoryProducts() {
           }} />
         </div>
 
-        <FilterComponent
-          sortOption={sortOption}
-          onSortChange={setSortOption}
-        />
+        {products.length > 0 && (
+          <FilterComponent
+            sortOption={sortOption}
+            onSortChange={setSortOption}
+          />
+        )}
 
         {loading ? (
           <div className="text-center my-5 py-5">
@@ -305,9 +322,49 @@ export default function CategoryProducts() {
             {error}
           </Alert>
         ) : filteredProducts.length === 0 ? (
-          <Alert variant="info" className="text-center">
-            No products found in this category.
-          </Alert>
+          <div className="text-center my-5 py-5">
+            <div style={{
+              width: '80px',
+              height: '80px',
+              borderRadius: '50%',
+              background: logoColors.softGradient,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              margin: '0 auto 1.5rem'
+            }}>
+              <FaSearch size={32} style={{ color: logoColors.primary }} />
+            </div>
+            <h4 style={{ color: logoColors.dark, marginBottom: '0.5rem' }}>
+              No Products Found
+            </h4>
+            <p style={{ color: '#718096', fontSize: '1rem', maxWidth: '400px', margin: '0 auto 1.5rem' }}>
+              We couldn't find any products in the "{categoryName}" category.
+              Please check back later or browse other categories.
+            </p>
+            <Button
+              onClick={() => navigate('/catalog')}
+              style={{
+                background: logoColors.gradient,
+                border: 'none',
+                padding: '0.6rem 2rem',
+                borderRadius: '50px',
+                fontWeight: '500'
+              }}
+              onMouseEnter={(e) => {
+                e.target.style.opacity = '0.9';
+                e.target.style.transform = 'translateY(-2px)';
+                e.target.style.boxShadow = `0 4px 12px ${logoColors.primary}40`;
+              }}
+              onMouseLeave={(e) => {
+                e.target.style.opacity = '1';
+                e.target.style.transform = 'translateY(0)';
+                e.target.style.boxShadow = 'none';
+              }}
+            >
+              Browse All Products
+            </Button>
+          </div>
         ) : (
           <>
             <div className="d-block d-md-none">

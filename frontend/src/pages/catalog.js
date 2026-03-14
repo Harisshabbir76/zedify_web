@@ -15,16 +15,16 @@ import { CartContext } from '../components/CartContext';
 import FilterComponent from '../components/Filter';
 import '../App.css';
 
-// Logo pink color palette
+// Navbar color palette
 const logoColors = {
-  primary: '#FF69B4', // Hot pink - main logo color
-  secondary: '#FF1493', // Deep pink - darker shade
-  light: '#FFB6C1', // Light pink - for accents
-  dark: '#C71585', // Medium violet red - very dark pink
-  background: '#FFF5F7', // Super light pink - almost white
-  lighterBg: '#FFF9FA', // Even lighter - subtle pink tint
-  gradient: 'linear-gradient(135deg, #FF69B4 0%, #FF1493 100%)', // Pink gradient from logo
-  softGradient: 'linear-gradient(135deg, #FFF0F3 0%, #FFE4E8 100%)', // Very soft pink gradient
+  primary: '#fe7e8b', // Navbar primary color
+  secondary: '#e65c70', // Navbar secondary color
+  light: '#ffd1d4', // Navbar light color
+  dark: '#d64555', // Navbar dark color
+  background: '#fff5f6', // Super light - almost white
+  lighterBg: '#fff9fa', // Even lighter - subtle tint
+  gradient: 'linear-gradient(135deg, #fe7e8b 0%, #e65c70 100%)', // Navbar gradient
+  softGradient: 'linear-gradient(135deg, #fff5f6 0%, #ffd1d4 100%)', // Very soft gradient
 };
 
 export default function Catalog() {
@@ -35,6 +35,8 @@ export default function Catalog() {
   const [sortOption, setSortOption] = useState('default');
   const { addToCart } = useContext(CartContext);
   const navigate = useNavigate();
+  const [selectedCategory, setSelectedCategory] = useState('');
+  const [categories, setCategories] = useState([]);
 
   useEffect(() => {
     const fetchProducts = async () => {
@@ -65,6 +67,12 @@ export default function Catalog() {
 
         setProducts(processedProducts);
         setFilteredProducts(processedProducts);
+
+        const uniqueCategories = [...new Set(processedProducts.map(p => {
+          if (typeof p.category === 'object' && p.category !== null) return p.category.name;
+          return p.category;
+        }).filter(Boolean))];
+        setCategories(uniqueCategories);
       } catch (err) {
         setError(err.response?.data?.message || err.message || 'Failed to load products');
         console.error('Fetch products error:', err);
@@ -79,28 +87,35 @@ export default function Catalog() {
   useEffect(() => {
     if (products.length === 0) return;
 
-    let sortedProducts = [...products];
+    let filtered = [...products];
+
+    if (selectedCategory) {
+      filtered = filtered.filter(p => {
+        const catName = typeof p.category === 'object' ? p.category.name : p.category;
+        return catName === selectedCategory;
+      });
+    }
 
     switch (sortOption) {
       case 'price-high-low':
-        sortedProducts.sort((a, b) => b.price - a.price);
+        filtered.sort((a, b) => b.price - a.price);
         break;
       case 'price-low-high':
-        sortedProducts.sort((a, b) => a.price - b.price);
+        filtered.sort((a, b) => a.price - b.price);
         break;
       case 'rating-high':
-        sortedProducts.sort((a, b) => b.rating - a.rating);
+        filtered.sort((a, b) => b.rating - a.rating);
         break;
       case 'newest':
-        sortedProducts.sort((a, b) => b.createdAt - a.createdAt);
+        filtered.sort((a, b) => b.createdAt - a.createdAt);
         break;
       default:
-        // Default sorting (original order)
+        // Default sorting
         break;
     }
 
-    setFilteredProducts(sortedProducts);
-  }, [sortOption, products]);
+    setFilteredProducts(filtered);
+  }, [sortOption, products, selectedCategory]);
 
   const handleSortChange = (option) => {
     setSortOption(option);
@@ -211,7 +226,7 @@ export default function Catalog() {
             fontSize: '0.85rem',
             marginBottom: '0.5rem'
           }}>
-            {product.category || 'Uncategorized'}
+            {typeof product.category === 'object' ? product.category.name : (product.category || 'Uncategorized')}
           </Card.Text>
           <div className="mt-auto">
             <div className="d-flex justify-content-between align-items-center mb-2">
@@ -308,6 +323,9 @@ export default function Catalog() {
         <FilterComponent
           sortOption={sortOption}
           onSortChange={handleSortChange}
+          categories={categories}
+          selectedCategory={selectedCategory}
+          onCategoryChange={setSelectedCategory}
         />
 
         {loading ? (

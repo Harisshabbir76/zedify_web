@@ -22,18 +22,18 @@ import ExportOrders from './ExportOrders';
 
 /* ─── Design tokens ─────────────────────────────────────────────── */
 const C = {
-  primary: '#FF69B4',
-  secondary: '#FF1493',
-  light: '#FFB6C1',
-  dark: '#C71585',
-  bg: '#FFF5F7',
+  primary: '#fe7e8b',
+  secondary: '#e65c70',
+  light: '#ffd1d4',
+  dark: '#d64555',
+  bg: '#fff5f6',
   card: '#FFFFFF',
   muted: '#A0AEC0',
   text: '#2D3748',
   subtext: '#718096',
   border: '#FFE4EC',
-  gradient: 'linear-gradient(135deg, #FF69B4 0%, #FF1493 100%)',
-  softGrad: 'linear-gradient(135deg, #FFF0F3 0%, #FFE4E8 100%)',
+  gradient: 'linear-gradient(135deg, #fe7e8b 0%, #e65c70 100%)',
+  softGrad: 'linear-gradient(135deg, #fff5f6 0%, #ffd1d4 100%)',
   tablHead: '#FFF8FA',
 };
 
@@ -226,7 +226,7 @@ const StatusBadge = ({ status }) => {
     },
     'out-for-delivery': {
       bg: '#FCE7F3',
-      color: '#C71585',
+      color: '#d64555',
       label: 'Out for Delivery',
       dot: C.primary
     },
@@ -383,6 +383,12 @@ const OrderTable = ({ orders, onStatusUpdate, onViewDetails, loading, emptyMessa
                         maxWidth: '250px'
                       }}>
                         {p.name} <span style={{ color: C.primary, fontWeight: 500 }}>x{p.quantity}</span>
+                        {(p.size || p.color || p.selectedSize || p.selectedColor) && (
+                          <div style={{ fontSize: '0.7rem', color: C.primary, fontWeight: 600, marginTop: '1px' }}>
+                            {(p.size || p.selectedSize) && <span style={{ marginRight: '6px' }}>S: {p.size || p.selectedSize}</span>}
+                            {(p.color || p.selectedColor) && <span>C: {p.color || p.selectedColor}</span>}
+                          </div>
+                        )}
                       </div>
                     ))}
                     {order.products.length > 2 && (

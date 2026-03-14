@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+﻿import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { Container, Spinner, Button, Row, Col, Card } from 'react-bootstrap';
@@ -11,17 +11,20 @@ import {
     FiUser,
     FiLock,
     FiShield,
-    FiTruck
+    FiTruck,
+    FiTag,
+    FiBox,
+    FiHelpCircle
 } from 'react-icons/fi';
 
-// Logo pink color palette - Minimal version
+// Navbar color palette - Minimal version
 const logoColors = {
-    primary: '#FF69B4',
-    light: '#FFB6C1',
-    dark: '#C71585',
-    background: '#FFF9FA',
-    gradient: 'linear-gradient(135deg, #FF69B4 0%, #FF1493 100%)',
-    softGradient: 'linear-gradient(135deg, #FFF0F3 0%, #FFE4E8 100%)',
+    primary: '#fe7e8b',
+    light: '#ffd1d4',
+    dark: '#d64555',
+    background: '#fff9fa',
+    gradient: 'linear-gradient(135deg, #fe7e8b 0%, #e65c70 100%)',
+    softGradient: 'linear-gradient(135deg, #fff5f6 0%, #ffd1d4 100%)',
 };
 
 export default function Dashboard() {
@@ -41,7 +44,7 @@ export default function Dashboard() {
                 const token = localStorage.getItem('token');
 
                 if (!token) {
-                    navigate('/login');
+                    navigate('/404');
                     return;
                 }
 
@@ -55,12 +58,12 @@ export default function Dashboard() {
                     setIsAuthorized(true);
                     setUser(response.data.user);
                 } else {
-                    navigate('/');
+                    navigate('/404');
                 }
             } catch (error) {
                 console.error('Authentication error:', error);
                 localStorage.removeItem('token');
-                navigate('/login');
+                navigate('/404');
             } finally {
                 setIsLoading(false);
             }
@@ -182,6 +185,36 @@ export default function Dashboard() {
             icon: <FiTruck size={20} />,
             path: '/dashboard/shipping',
             description: 'Delivery settings'
+        },
+        {
+            title: 'Categories',
+            icon: <FiGrid size={20} />,
+            path: '/dashboard/categories',
+            description: 'Manage categories'
+        },
+        {
+            title: 'Hero Slider',
+            icon: <FiGrid size={20} />,
+            path: '/dashboard/hero',
+            description: 'Home page slider'
+        },
+        {
+            title: 'Discounts',
+            icon: <FiTag size={20} />,
+            path: '/dashboard/discounts',
+            description: 'Coupons & offers'
+        },
+        {
+            title: 'Bundles',
+            icon: <FiBox size={20} />,
+            path: '/dashboard/bundles',
+            description: 'Product bundles'
+        },
+        {
+            title: 'FAQs',
+            icon: <FiHelpCircle size={20} />,
+            path: '/dashboard/faqs',
+            description: 'Frequently asked questions'
         }
     ];
 

@@ -3,15 +3,15 @@ import { Modal, Button, Form, Spinner, Alert, Row, Col, Image } from 'react-boot
 import axios from 'axios';
 import { FaTrash, FaUpload } from 'react-icons/fa';
 
-// Logo pink color palette
+// Navbar color palette
 const logoColors = {
-  primary: '#FF69B4', // Hot pink - main logo color
-  secondary: '#FF1493', // Deep pink - darker shade
-  light: '#FFB6C1', // Light pink - for accents
-  dark: '#C71585', // Medium violet red - very dark pink
-  background: '#FFF5F7', // Super light pink - almost white
-  gradient: 'linear-gradient(135deg, #FF69B4 0%, #FF1493 100%)', // Pink gradient from logo
-  softGradient: 'linear-gradient(135deg, #FFF0F3 0%, #FFE4E8 100%)', // Very soft pink gradient
+  primary: '#fe7e8b', // Navbar primary color
+  secondary: '#e65c70', // Navbar secondary color
+  light: '#ffd1d4', // Navbar light color
+  dark: '#d64555', // Navbar dark color
+  background: '#fff5f6', // Super light - almost white
+  gradient: 'linear-gradient(135deg, #fe7e8b 0%, #e65c70 100%)', // Navbar gradient
+  softGradient: 'linear-gradient(135deg, #fff5f6 0%, #ffd1d4 100%)', // Very soft gradient
 };
 
 const ProductEditModal = ({ show, product, onClose, onSave }) => {
@@ -28,6 +28,7 @@ const ProductEditModal = ({ show, product, onClose, onSave }) => {
   const [error, setError] = useState(null);
   const [imageUploading, setImageUploading] = useState(false);
   const [newImages, setNewImages] = useState([]);
+  const [isDragging, setIsDragging] = useState(false);
 
   useEffect(() => {
     if (product) {
@@ -36,7 +37,7 @@ const ProductEditModal = ({ show, product, onClose, onSave }) => {
         price: product.price || 0,
         discountedPrice: product.discountedPrice || 0,
         description: product.description || '',
-        category: product.category || '',
+        category: (typeof product.category === 'object' && product.category !== null) ? (product.category.name || '') : (product.category || ''),
         stock: product.stock || 0,
         images: product.image || []
       });
@@ -55,7 +56,13 @@ const ProductEditModal = ({ show, product, onClose, onSave }) => {
   };
 
   const handleImageUpload = async (e) => {
-    const files = Array.from(e.target.files);
+    let files = [];
+    if (e.target.files) {
+      files = Array.from(e.target.files);
+    } else if (e.dataTransfer && e.dataTransfer.files) {
+      files = Array.from(e.dataTransfer.files);
+    }
+
     if (files.length === 0) return;
     // Store new image files as object URLs for preview
     const previewUrls = files.map(file => ({ file, url: URL.createObjectURL(file) }));
@@ -315,9 +322,35 @@ const ProductEditModal = ({ show, product, onClose, onSave }) => {
                   </div>
 
                   {/* New Images */}
-                  <div className="mb-3">
+                  <div 
+                    className="mb-3 border rounded p-3 text-center"
+                    onDragOver={(e) => {
+                      e.preventDefault();
+                      setIsDragging(true);
+                    }}
+                    onDragEnter={(e) => {
+                      e.preventDefault();
+                      setIsDragging(true);
+                    }}
+                    onDragLeave={(e) => {
+                      e.preventDefault();
+                      setIsDragging(false);
+                    }}
+                    onDrop={(e) => {
+                      e.preventDefault();
+                      setIsDragging(false);
+                      handleImageUpload(e);
+                    }}
+                    style={{
+                      borderColor: isDragging ? logoColors.primary : logoColors.light,
+                      background: isDragging ? logoColors.softGradient : logoColors.lighterBg,
+                      borderStyle: isDragging ? 'dashed' : 'solid',
+                      borderWidth: '2px',
+                      transition: 'all 0.3s ease'
+                    }}
+                  >
                     <h6 style={{ color: logoColors.dark, fontWeight: '600' }}>New Images</h6>
-                    <div className="d-flex flex-wrap gap-2">
+                    <div className="d-flex flex-wrap gap-2 mb-2">
                       {newImages.map((img, index) => (
                         <div key={`new-${index}`} className="position-relative" style={{ width: '100px' }}>
                           <Image

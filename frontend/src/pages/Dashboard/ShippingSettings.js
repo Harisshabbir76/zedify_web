@@ -1,17 +1,17 @@
-import React, { useState, useEffect } from 'react';
+﻿import React, { useState, useEffect } from 'react';
 import { Container, Card, Form, Button, Spinner, Alert } from 'react-bootstrap';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { FiArrowLeft, FiTruck, FiSave } from 'react-icons/fi';
 
 const logoColors = {
-    primary: '#FF69B4',
-    secondary: '#FF1493',
-    light: '#FFB6C1',
-    dark: '#C71585',
-    background: '#FFF5F7',
-    gradient: 'linear-gradient(135deg, #FF69B4 0%, #FF1493 100%)',
-    softGradient: 'linear-gradient(135deg, #FFF0F3 0%, #FFE4E8 100%)',
+    primary: '#fe7e8b',
+    secondary: '#e65c70',
+    light: '#ffd1d4',
+    dark: '#d64555',
+    background: '#fff5f6',
+    gradient: 'linear-gradient(135deg, #fe7e8b 0%, #e65c70 100%)',
+    softGradient: 'linear-gradient(135deg, #fff5f6 0%, #ffd1d4 100%)',
 };
 
 export default function ShippingSettings() {

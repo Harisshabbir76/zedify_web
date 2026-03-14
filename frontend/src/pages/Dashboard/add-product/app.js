@@ -26,15 +26,15 @@ import {
   FiX
 } from 'react-icons/fi';
 
-// Logo pink color palette
+// Navbar color palette
 const logoColors = {
-  primary: '#FF69B4', // Hot pink - main logo color
-  secondary: '#FF1493', // Deep pink - darker shade
-  light: '#FFB6C1', // Light pink - for accents
-  dark: '#C71585', // Medium violet red - very dark pink
-  background: '#FFF5F7', // Super light pink - almost white
-  gradient: 'linear-gradient(135deg, #FF69B4 0%, #FF1493 100%)', // Pink gradient from logo
-  softGradient: 'linear-gradient(135deg, #FFF0F3 0%, #FFE4E8 100%)', // Very soft pink gradient
+  primary: '#fe7e8b', // Navbar primary color
+  secondary: '#e65c70', // Navbar secondary color
+  light: '#ffd1d4', // Navbar light color
+  dark: '#d64555', // Navbar dark color
+  background: '#fff5f6', // Super light - almost white
+  gradient: 'linear-gradient(135deg, #fe7e8b 0%, #e65c70 100%)', // Navbar gradient
+  softGradient: 'linear-gradient(135deg, #fff5f6 0%, #ffd1d4 100%)', // Very soft gradient
 };
 
 export default function AddProduct() {
@@ -45,12 +45,15 @@ export default function AddProduct() {
     discountedPrice: '',
     category: '',
     stock: '',
-    slug: ''
+    sizes: '',
+    colors: ''
   });
+  const [categories, setCategories] = useState([]);
   const [images, setImages] = useState([]);
   const [imagePreviews, setImagePreviews] = useState([]);
   const [error, setError] = useState(null);
   const [success, setSuccess] = useState(null);
+  const [isDragging, setIsDragging] = useState(false);
   const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(true);
   const [isAuthorized, setIsAuthorized] = useState(false);
@@ -64,12 +67,20 @@ export default function AddProduct() {
   };
 
   const handleImageChange = (e) => {
-    const files = Array.from(e.target.files);
-    setImages(files);
+    let files = [];
+    if (e.target.files) {
+      files = Array.from(e.target.files);
+    } else if (e.dataTransfer && e.dataTransfer.files) {
+      files = Array.from(e.dataTransfer.files);
+    }
+    
+    if (files.length === 0) return;
+    
+    setImages(prev => [...prev, ...files]);
 
     // Create preview URLs
     const previews = files.map(file => URL.createObjectURL(file));
-    setImagePreviews(previews);
+    setImagePreviews(prev => [...prev, ...previews]);
   };
 
   const removeImage = (index) => {
@@ -115,14 +126,18 @@ export default function AddProduct() {
         originalPrice: '',
         discountedPrice: '',
         category: '',
-        stock: '',
-        slug: ''
+        stock: ''
       });
 
       // Clean up image previews
       imagePreviews.forEach(url => URL.revokeObjectURL(url));
       setImages([]);
       setImagePreviews([]);
+
+      // Redirect to dashboard catalog after a short delay to show success message
+      setTimeout(() => {
+        navigate('/dashboard/catalog');
+      }, 2000);
     } catch (err) {
       console.error(err);
       setError("Product Addition Failed: " + (err.response?.data?.message || err.message));
@@ -156,7 +171,17 @@ export default function AddProduct() {
         setIsLoading(false);
       }
     };
+    const fetchCategories = async () => {
+      try {
+        const res = await axios.get(`${process.env.REACT_APP_API_URL}/api/categories`);
+        setCategories(res.data);
+      } catch (err) {
+        console.error('Error fetching categories:', err);
+      }
+    };
+
     checkAuth();
+    fetchCategories();
   }, [navigate]);
 
   // Clean up previews on unmount
@@ -227,7 +252,7 @@ export default function AddProduct() {
                 variant="danger"
                 className="text-center"
                 style={{
-                  background: '#FFE4E8',
+                  background: '#ffd1d4',
                   border: `1px solid ${logoColors.primary}`,
                   color: logoColors.dark,
                   borderRadius: '8px'
@@ -289,8 +314,7 @@ export default function AddProduct() {
                       <FiTag className="me-2" style={{ color: logoColors.primary }} />
                       Category
                     </Form.Label>
-                    <Form.Control
-                      type="text"
+                    <Form.Select
                       name="category"
                       value={formData.category}
                       onChange={handleChange}
@@ -309,7 +333,14 @@ export default function AddProduct() {
                         e.target.style.borderColor = logoColors.light;
                         e.target.style.boxShadow = 'none';
                       }}
-                    />
+                    >
+                      <option value="">Select Category</option>
+                      {categories.map(cat => (
+                        <option key={cat._id} value={cat.name}>
+                          {cat.name}
+                        </option>
+                      ))}
+                    </Form.Select>
                   </Form.Group>
                 </Col>
               </Row>
@@ -325,7 +356,6 @@ export default function AddProduct() {
                   name="description"
                   value={formData.description}
                   onChange={handleChange}
-                  required
                   style={{
                     borderColor: logoColors.light,
                     padding: '0.75rem',
@@ -356,14 +386,13 @@ export default function AddProduct() {
                         borderColor: logoColors.light,
                         color: logoColors.primary
                       }}>
-                        $
+                        Rs.
                       </InputGroup.Text>
                       <Form.Control
                         type="number"
                         name="originalPrice"
                         value={formData.originalPrice}
                         onChange={handleChange}
-                        required
                         style={{
                           borderColor: logoColors.light,
                           padding: '0.75rem',
@@ -393,7 +422,7 @@ export default function AddProduct() {
                         borderColor: logoColors.light,
                         color: logoColors.primary
                       }}>
-                        $
+                        Rs.
                       </InputGroup.Text>
                       <Form.Control
                         type="number"
@@ -450,36 +479,86 @@ export default function AddProduct() {
                     />
                   </Form.Group>
                 </Col>
-                <Col md={6}>
-                  <Form.Group className="mb-3">
-                    <Form.Label style={{ color: logoColors.dark, fontWeight: '500' }}>
-                      <FiLink className="me-2" style={{ color: logoColors.primary }} />
-                      Product Slug
-                    </Form.Label>
-                    <Form.Control
-                      type="text"
-                      name="slug"
-                      value={formData.slug}
-                      onChange={handleChange}
-                      required
-                      style={{
-                        borderColor: logoColors.light,
-                        padding: '0.75rem',
-                        borderRadius: '8px',
-                        transition: 'all 0.3s ease'
-                      }}
-                      onFocus={(e) => {
-                        e.target.style.borderColor = logoColors.primary;
-                        e.target.style.boxShadow = `0 0 0 3px ${logoColors.primary}20`;
-                      }}
-                      onBlur={(e) => {
-                        e.target.style.borderColor = logoColors.light;
-                        e.target.style.boxShadow = 'none';
-                      }}
-                    />
-                  </Form.Group>
-                </Col>
               </Row>
+
+              {/* Variants Section - Optional */}
+              <div className="mb-4" style={{
+                background: logoColors.softGradient,
+                padding: '1.5rem',
+                borderRadius: '12px',
+                border: `1px solid ${logoColors.light}`
+              }}>
+                <h5 style={{ color: logoColors.dark, marginBottom: '1rem' }}>
+                  Product Variants (Optional)
+                </h5>
+                <p style={{ color: '#718096', fontSize: '0.9rem', marginBottom: '1rem' }}>
+                  Add sizes and colors for this product. Leave empty if not applicable.
+                </p>
+                <Row>
+                  <Col md={6}>
+                    <Form.Group className="mb-3">
+                      <Form.Label style={{ color: logoColors.dark, fontWeight: '500' }}>
+                        Sizes (comma separated)
+                      </Form.Label>
+                      <Form.Control
+                        type="text"
+                        name="sizes"
+                        value={formData.sizes || ''}
+                        onChange={handleChange}
+                        placeholder="e.g., S, M, L, XL, XXL"
+                        style={{
+                          borderColor: logoColors.light,
+                          padding: '0.75rem',
+                          borderRadius: '8px',
+                          transition: 'all 0.3s ease'
+                        }}
+                        onFocus={(e) => {
+                          e.target.style.borderColor = logoColors.primary;
+                          e.target.style.boxShadow = `0 0 0 3px ${logoColors.primary}20`;
+                        }}
+                        onBlur={(e) => {
+                          e.target.style.borderColor = logoColors.light;
+                          e.target.style.boxShadow = 'none';
+                        }}
+                      />
+                      <Form.Text className="text-muted" style={{ color: '#718096' }}>
+                        Example: S, M, L, XL
+                      </Form.Text>
+                    </Form.Group>
+                  </Col>
+                  <Col md={6}>
+                    <Form.Group className="mb-3">
+                      <Form.Label style={{ color: logoColors.dark, fontWeight: '500' }}>
+                        Colors (comma separated)
+                      </Form.Label>
+                      <Form.Control
+                        type="text"
+                        name="colors"
+                        value={formData.colors || ''}
+                        onChange={handleChange}
+                        placeholder="e.g., Red, Blue, Green, Black"
+                        style={{
+                          borderColor: logoColors.light,
+                          padding: '0.75rem',
+                          borderRadius: '8px',
+                          transition: 'all 0.3s ease'
+                        }}
+                        onFocus={(e) => {
+                          e.target.style.borderColor = logoColors.primary;
+                          e.target.style.boxShadow = `0 0 0 3px ${logoColors.primary}20`;
+                        }}
+                        onBlur={(e) => {
+                          e.target.style.borderColor = logoColors.light;
+                          e.target.style.boxShadow = 'none';
+                        }}
+                      />
+                      <Form.Text className="text-muted" style={{ color: '#718096' }}>
+                        Example: Red, Blue, Black, White
+                      </Form.Text>
+                    </Form.Group>
+                  </Col>
+                </Row>
+              </div>
 
               <Form.Group className="mb-4">
                 <Form.Label style={{ color: logoColors.dark, fontWeight: '500' }}>
@@ -488,19 +567,30 @@ export default function AddProduct() {
                 </Form.Label>
                 <div
                   className="border rounded p-4 text-center"
-                  style={{
-                    borderColor: logoColors.light,
-                    background: logoColors.lighterBg,
-                    cursor: 'pointer',
-                    transition: 'all 0.3s ease'
+                  onDragOver={(e) => {
+                    e.preventDefault();
+                    setIsDragging(true);
                   }}
-                  onDragOver={(e) => e.preventDefault()}
+                  onDragEnter={(e) => {
+                    e.preventDefault();
+                    setIsDragging(true);
+                  }}
+                  onDragLeave={(e) => {
+                    e.preventDefault();
+                    setIsDragging(false);
+                  }}
                   onDrop={(e) => {
                     e.preventDefault();
-                    const files = Array.from(e.dataTransfer.files);
-                    if (files.length > 0) {
-                      handleImageChange({ target: { files } });
-                    }
+                    setIsDragging(false);
+                    handleImageChange(e);
+                  }}
+                  style={{
+                    borderColor: isDragging ? logoColors.primary : logoColors.light,
+                    background: isDragging ? logoColors.softGradient : logoColors.lighterBg,
+                    cursor: 'pointer',
+                    transition: 'all 0.3s ease',
+                    borderStyle: isDragging ? 'dashed' : 'solid',
+                    borderWidth: '2px'
                   }}
                 >
                   <FiUpload

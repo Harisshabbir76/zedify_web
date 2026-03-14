@@ -18,7 +18,7 @@ const RecommendedProducts = ({ currentProductId, category }) => {
 
         console.log(`Fetching products for category: ${category}`); // Debug log
         const res = await axios.get(
-          `${process.env.REACT_APP_API_URL}/catalog?category=${encodeURIComponent(category)}`
+          `${process.env.REACT_APP_API_URL}/catalog?category=${encodeURIComponent(typeof category === 'object' ? category.name : category)}`
         );
 
         console.log('API response:', res.data); // Debug log
@@ -88,7 +88,7 @@ const RecommendedProducts = ({ currentProductId, category }) => {
 
           return (
             <Col key={product._id} xs={6} md={3}>
-              <Card as={Link} to={`/product/${product.slug || product._id}`} className="h-100 text-decoration-none">
+              <Card as={Link} to={`/product/${product._id}`} className="h-100 text-decoration-none">
                 <Card.Img
                   variant="top"
                   src={imageUrl}

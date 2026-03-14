@@ -14,23 +14,30 @@ import {
   Form,
   ListGroup
 } from 'react-bootstrap';
+import { 
+  FiTruck, 
+  FiShield, 
+  FiRotateCcw,
+  FiShoppingBag,
+  FiCheckCircle
+} from 'react-icons/fi';
 import { useCart } from '../../components/CartContext';
 import RecommendedProducts from '../../components/RecommendedProducts';
 
-// Logo pink color palette
+// Navbar color palette
 const logoColors = {
-  primary: '#FF69B4', // Hot pink - main logo color
-  secondary: '#FF1493', // Deep pink - darker shade
-  light: '#FFB6C1', // Light pink - for accents
-  dark: '#C71585', // Medium violet red - very dark pink
-  background: '#FFF5F7', // Super light pink - almost white
-  lighterBg: '#FFF9FA', // Even lighter - subtle pink tint
-  gradient: 'linear-gradient(135deg, #FF69B4 0%, #FF1493 100%)', // Pink gradient from logo
-  softGradient: 'linear-gradient(135deg, #FFF0F3 0%, #FFE4E8 100%)', // Very soft pink gradient
+  primary: '#fe7e8b', // Navbar primary color
+  secondary: '#e65c70', // Navbar secondary color
+  light: '#ffd1d4', // Navbar light color
+  dark: '#d64555', // Navbar dark color
+  background: '#fff5f6', // Super light - almost white
+  lighterBg: '#fff9fa', // Even lighter - subtle tint
+  gradient: 'linear-gradient(135deg, #fe7e8b 0%, #e65c70 100%)', // Navbar gradient
+  softGradient: 'linear-gradient(135deg, #fff5f6 0%, #ffd1d4 100%)', // Very soft gradient
 };
 
 export default function ProductDetails() {
-  const { slug } = useParams();
+  const { id } = useParams();
   const navigate = useNavigate();
   const { addToCart } = useCart();
   const [product, setProduct] = useState(null);
@@ -38,6 +45,8 @@ export default function ProductDetails() {
   const [error, setError] = useState(null);
   const [selectedImage, setSelectedImage] = useState(0);
   const [quantity, setQuantity] = useState(1);
+  const [selectedSize, setSelectedSize] = useState('');
+  const [selectedColor, setSelectedColor] = useState('');
   const [reviews, setReviews] = useState([]);
   const [reviewForm, setReviewForm] = useState({
     userName: '',
@@ -51,7 +60,7 @@ export default function ProductDetails() {
   useEffect(() => {
     const fetchProduct = async () => {
       try {
-        const res = await axios.get(`${process.env.REACT_APP_API_URL}/product/${slug}`);
+        const res = await axios.get(`${process.env.REACT_APP_API_URL}/product/${id}`);
         setProduct(res.data);
         setReviews(res.data.reviews || []);
       } catch (err) {
@@ -62,21 +71,35 @@ export default function ProductDetails() {
     };
 
     fetchProduct();
-  }, [slug]);
+  }, [id]);
 
   const handleAddToCart = () => {
+    if ((product.variants?.sizes?.length > 0 && !selectedSize) || 
+        (product.variants?.colors?.length > 0 && !selectedColor)) {
+      alert('Please select size and color');
+      return;
+    }
     addToCart({
       ...product,
-      quantity: quantity
+      quantity: quantity,
+      selectedSize,
+      selectedColor
     });
   };
 
   const handleOrderNow = () => {
+    if ((product.variants?.sizes?.length > 0 && !selectedSize) || 
+        (product.variants?.colors?.length > 0 && !selectedColor)) {
+      alert('Please select size and color');
+      return;
+    }
     navigate('/checkout', {
       state: {
         products: [{
           ...product,
-          quantity: quantity
+          quantity: quantity,
+          selectedSize,
+          selectedColor
         }]
       }
     });
@@ -113,7 +136,7 @@ export default function ProductDetails() {
       });
 
       // Refresh product and reviews
-      const res = await axios.get(`${process.env.REACT_APP_API_URL}/product/${slug}`);
+      const res = await axios.get(`${process.env.REACT_APP_API_URL}/product/${id}`);
       setProduct(res.data);
       setReviews(res.data.reviews);
 
@@ -225,7 +248,7 @@ export default function ProductDetails() {
                     fontWeight: '500'
                   }}
                 >
-                  {product.category}
+                  {typeof product.category === 'object' ? product.category.name : product.category}
                 </Badge>
                 <h1 className="display-5 fw-bold" style={{ color: '#2D3748' }}>{product.name}</h1>
                 {product.stock > 0 ? (
@@ -254,15 +277,11 @@ export default function ProductDetails() {
                 )}
               </div>
 
-              <div>
-                <p className="text-muted" style={{ color: '#4A5568', lineHeight: '1.8' }}>{product.description}</p>
-              </div>
-
               <div className="d-flex align-items-center gap-3">
                 <h3 className="mb-0" style={{ color: logoColors.primary }}>
                   Rs. {product.discountedPrice}
                 </h3>
-                {product.discountedPrice < product.originalPrice && (
+                {product.originalPrice && product.originalPrice > product.discountedPrice && (
                   <del className="text-muted" style={{ color: '#718096' }}>Rs. {product.originalPrice}</del>
                 )}
               </div>
@@ -287,22 +306,93 @@ export default function ProductDetails() {
                 </span>
               </div>
 
+              {/* Product Variants - Sizes and Colors */}
+              {(product.variants?.sizes?.length > 0 || product.variants?.colors?.length > 0) && (
+                <div className="mt-3">
+                  {product.variants?.sizes?.length > 0 && (
+                    <Form.Group className="mb-3">
+                      <Form.Label style={{ color: '#4A5568', fontWeight: '500' }}>Size:</Form.Label>
+                      <div className="d-flex gap-2 flex-wrap">
+                        {product.variants.sizes.map((size, index) => (
+                          <Button
+                            key={index}
+                            variant={selectedSize === size ? "primary" : "outline-secondary"}
+                            size="sm"
+                            onClick={() => setSelectedSize(size)}
+                            style={{
+                              borderRadius: '8px',
+                              borderColor: selectedSize === size ? logoColors.primary : '#e2e8f0',
+                              background: selectedSize === size ? logoColors.gradient : 'transparent',
+                              color: selectedSize === size ? 'white' : '#4A5568'
+                            }}
+                          >
+                            {size}
+                          </Button>
+                        ))}
+                      </div>
+                    </Form.Group>
+                  )}
+                  {product.variants?.colors?.length > 0 && (
+                    <Form.Group className="mb-3">
+                      <Form.Label style={{ color: '#4A5568', fontWeight: '500' }}>Color:</Form.Label>
+                      <div className="d-flex gap-2 flex-wrap">
+                        {product.variants.colors.map((color, index) => (
+                          <Button
+                            key={index}
+                            variant={selectedColor === color ? "primary" : "outline-secondary"}
+                            size="sm"
+                            onClick={() => setSelectedColor(color)}
+                            style={{
+                              borderRadius: '8px',
+                              borderColor: selectedColor === color ? logoColors.primary : '#e2e8f0',
+                              background: selectedColor === color ? logoColors.gradient : 'transparent',
+                              color: selectedColor === color ? 'white' : '#4A5568'
+                            }}
+                          >
+                            {color}
+                          </Button>
+                        ))}
+                      </div>
+                    </Form.Group>
+                  )}
+                </div>
+              )}
+
               {/* Quantity Selector */}
               {product.stock > 0 && (
                 <Form.Group controlId="quantity" className="mt-3">
                   <Form.Label style={{ color: '#4A5568', fontWeight: '500' }}>Quantity:</Form.Label>
-                  <Form.Control
-                    type="number"
-                    min="1"
-                    max={product.stock}
-                    value={quantity}
-                    onChange={handleQuantityChange}
-                    style={{
-                      width: '100px',
-                      borderRadius: '8px',
-                      borderColor: '#e2e8f0'
-                    }}
-                  />
+                  <div className="d-flex align-items-center">
+                    <Button
+                      variant="outline-secondary"
+                      onClick={() => setQuantity(q => Math.max(1, q - 1))}
+                      style={{ borderRadius: '8px 0 0 8px', borderColor: '#e2e8f0' }}
+                    >
+                      -
+                    </Button>
+                    <Form.Control
+                      type="number"
+                      min="1"
+                      max={product.stock}
+                      value={quantity}
+                      onChange={handleQuantityChange}
+                      className="text-center"
+                      style={{
+                        width: '60px',
+                        borderRadius: '0',
+                        borderColor: '#e2e8f0',
+                        borderLeft: 'none',
+                        borderRight: 'none'
+                      }}
+                    />
+                    <Button
+                      variant="outline-secondary"
+                      onClick={() => setQuantity(q => Math.min(product.stock, q + 1))}
+                      style={{ borderRadius: '0 8px 8px 0', borderColor: '#e2e8f0' }}
+                    >
+                      +
+                    </Button>
+                  </div>
                   <Form.Text className="text-muted" style={{ color: '#718096' }}>
                     Max {product.stock} available
                   </Form.Text>
@@ -317,23 +407,27 @@ export default function ProductDetails() {
                       size="lg"
                       onClick={handleOrderNow}
                       style={{
-                        background: logoColors.gradient,
+                        background: 'linear-gradient(135deg, #FF4B5C 0%, #E63946 100%)',
                         border: 'none',
                         flex: 1,
-                        padding: '0.75rem',
-                        borderRadius: '8px',
-                        fontWeight: '500',
-                        transition: 'all 0.3s ease'
+                        padding: '0.9rem',
+                        borderRadius: '12px',
+                        fontWeight: '700',
+                        fontSize: '1rem',
+                        letterSpacing: '0.5px',
+                        textTransform: 'uppercase',
+                        boxShadow: '0 4px 15px rgba(230,57,70,0.3)',
+                        transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)'
                       }}
                       onMouseEnter={(e) => {
-                        e.target.style.opacity = '0.9';
-                        e.target.style.transform = 'translateY(-2px)';
-                        e.target.style.boxShadow = `0 4px 12px ${logoColors.primary}40`;
+                        e.currentTarget.style.transform = 'translateY(-2px) scale(1.02)';
+                        e.currentTarget.style.boxShadow = '0 6px 20px rgba(230,57,70,0.45)';
+                        e.currentTarget.style.filter = 'brightness(1.1)';
                       }}
                       onMouseLeave={(e) => {
-                        e.target.style.opacity = '1';
-                        e.target.style.transform = 'translateY(0)';
-                        e.target.style.boxShadow = 'none';
+                        e.currentTarget.style.transform = 'translateY(0) scale(1)';
+                        e.currentTarget.style.boxShadow = '0 4px 15px rgba(230,57,70,0.3)';
+                        e.currentTarget.style.filter = 'none';
                       }}
                     >
                       Order Now
@@ -345,33 +439,30 @@ export default function ProductDetails() {
                         handleAddToCart();
                       }}
                       style={{
-                        borderColor: logoColors.primary,
-                        color: logoColors.primary,
+                        borderColor: '#E63946',
+                        color: '#E63946',
+                        background: 'white',
                         flex: 1,
-                        padding: '0.75rem',
-                        borderRadius: '8px',
-                        fontWeight: '500',
-                        transition: 'all 0.3s ease'
+                        padding: '0.9rem',
+                        borderRadius: '12px',
+                        fontWeight: '700',
+                        fontSize: '1rem',
+                        letterSpacing: '0.5px',
+                        textTransform: 'uppercase',
+                        borderWidth: '2px',
+                        transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)'
                       }}
                       onMouseEnter={(e) => {
-                        e.target.style.background = logoColors.softGradient;
-                        e.target.style.color = logoColors.dark;
-                        e.target.style.transform = 'translateY(-2px)';
-                        e.target.style.boxShadow = `0 4px 12px ${logoColors.primary}40`;
+                        e.currentTarget.style.background = '#FFF5F5';
+                        e.currentTarget.style.transform = 'translateY(-2px)';
+                        e.currentTarget.style.boxShadow = '0 4px 12px rgba(230,57,70,0.15)';
                       }}
                       onMouseLeave={(e) => {
-                        e.target.style.background = 'transparent';
-                        e.target.style.color = logoColors.primary;
-                        e.target.style.transform = 'translateY(0)';
-                        e.target.style.boxShadow = 'none';
+                        e.currentTarget.style.background = 'white';
+                        e.currentTarget.style.transform = 'translateY(0)';
+                        e.currentTarget.style.boxShadow = 'none';
                       }}
                       data-track="add_to_cart"
-                      data-track-meta={JSON.stringify({
-                        product_id: product.id,
-                        price: product.price,
-                        name: product.name,
-                        category: product.category,
-                      })}
                     >
                       Add to Cart
                     </Button>
@@ -387,6 +478,39 @@ export default function ProductDetails() {
                   </Button>
                 )}
               </Stack>
+
+              {/* Promotional Icons */}
+              <div className="mt-4 pt-4 border-top">
+                <Row className="text-center g-2">
+                  <Col xs={4}>
+                    <div className="d-flex flex-column align-items-center">
+                      <FiTruck size={24} className="mb-2" />
+                      <div style={{ fontWeight: '600', fontSize: '0.85rem' }}>7 Day Delivery</div>
+                      <div style={{ fontSize: '0.7rem', color: '#718096' }}>Fast Shipping</div>
+                    </div>
+                  </Col>
+                  <Col xs={4} style={{ borderLeft: '1px solid #e2e8f0', borderRight: '1px solid #e2e8f0' }}>
+                    <div className="d-flex flex-column align-items-center">
+                      <FiShield size={24} className="mb-2" />
+                      <div style={{ fontWeight: '600', fontSize: '0.85rem' }}>Verified Products</div>
+                      <div style={{ fontSize: '0.7rem', color: '#718096' }}>Quality Assured</div>
+                    </div>
+                  </Col>
+                  <Col xs={4}>
+                    <div className="d-flex flex-column align-items-center">
+                      <FiRotateCcw size={24} className="mb-2" />
+                      <div style={{ fontWeight: '600', fontSize: '0.85rem' }}>Easy Returns</div>
+                      <div style={{ fontSize: '0.7rem', color: '#718096' }}>Hassle-Free Returns</div>
+                    </div>
+                  </Col>
+                </Row>
+              </div>
+
+              {/* Description - Below Order Now/Add to Cart buttons */}
+              <div className="mt-4">
+                <h5 style={{ color: logoColors.dark, marginBottom: '0.5rem' }}>Description</h5>
+                <p className="text-muted" style={{ color: '#4A5568', lineHeight: '1.8' }}>{product.description}</p>
+              </div>
             </Stack>
           </Col>
         </Row>
@@ -562,7 +686,7 @@ export default function ProductDetails() {
           <Col>
             <RecommendedProducts
               currentProductId={product._id}
-              category={product.category}
+              category={typeof product.category === 'object' ? product.category.name : product.category}
             />
           </Col>
         </Row>

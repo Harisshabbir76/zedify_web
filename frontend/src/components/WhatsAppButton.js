@@ -7,7 +7,7 @@ const WhatsAppButton = ({ order }) => {
   const formatPhoneNumber = (phone) => {
     // Remove all non-digit characters
     const cleaned = phone.replace(/\D/g, '');
-    
+
     // If number starts with country code (like 92 for Pakistan), keep it
     // If it starts with 0, replace with country code
     if (cleaned.startsWith('0')) {
@@ -18,16 +18,20 @@ const WhatsAppButton = ({ order }) => {
 
   const handleWhatsAppClick = () => {
     // Format the message
-    const productsList = order.products.map(p => 
-      `${p.name} (x${p.quantity})`
-    ).join('\n');
-    
-    const message = `Hello ${order.customerName},\n\nYour order has been confirmed!\n\nOrder Details:\n${productsList}\n\nTotal Amount: $${order.totalAmount.toFixed(2)}\n\nThank you for shopping with us!`;
-    
+    const productsList = order.products.map(p => {
+      let variantStr = '';
+      if (p.size || p.color) {
+        variantStr = ` (${[p.size, p.color].filter(Boolean).join(', ')})`;
+      }
+      return `${p.name}${variantStr} (x${p.quantity})`;
+    }).join('\n');
+
+    const message = `Hello ${order.customerName},\n\nYour order has been confirmed!\n\nOrder Details:\n${productsList}\n\nTotal Amount: Rs. ${order.totalAmount.toFixed(2)}\n\nThank you for shopping with us!`;
+
     // Format the phone number properly
     const rawPhone = order.phone; // Should be in format +92XXXXXXXXXX or 0XXXXXXXXXX
     const formattedPhone = formatPhoneNumber(rawPhone);
-    
+
     if (!formattedPhone || formattedPhone.length < 11) {
       alert('Invalid phone number format');
       return;
@@ -35,11 +39,11 @@ const WhatsAppButton = ({ order }) => {
 
     // Encode the message for URL
     const encodedMessage = encodeURIComponent(message);
-    
+
     // Create WhatsApp URIs
     const desktopAppUri = `whatsapp://send?phone=${formattedPhone}&text=${encodedMessage}`;
     const webUri = `https://web.whatsapp.com/send?phone=${formattedPhone}&text=${encodedMessage}`;
-    
+
     // Try to open WhatsApp
     if (navigator.platform.includes('Win') || navigator.platform.includes('Mac')) {
       window.location.href = desktopAppUri;
@@ -54,8 +58,8 @@ const WhatsAppButton = ({ order }) => {
   };
 
   return (
-    <Button 
-      variant="success" 
+    <Button
+      variant="success"
       onClick={handleWhatsAppClick}
       className="d-flex align-items-center mt-3"
       style={{

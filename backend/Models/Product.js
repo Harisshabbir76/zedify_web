@@ -8,7 +8,10 @@ const productSchema = new mongoose.Schema({
   image: [String],
   category: String,
   stock: Number,
-  slug: { type: String, unique: true },
+  variants: {
+    sizes: [String],
+    colors: [String]
+  },
   averageRating: {
     type: Number,
     default: 0
@@ -16,6 +19,11 @@ const productSchema = new mongoose.Schema({
   reviewCount: {
     type: Number,
     default: 0
+  },
+  slug: {
+    type: String,
+    unique: true,
+    sparse: true
   }
 }, { timestamps: true });
 

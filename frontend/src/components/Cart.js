@@ -1,19 +1,21 @@
 import React, { useContext } from 'react';
 import { CartContext } from './CartContext';
 import { Button, Table, Container, Row, Col, Card } from 'react-bootstrap';
+import { FaBox } from 'react-icons/fa';
 import { Link } from 'react-router-dom';
 import './heroSlider.css'; // We'll create this CSS file
 
-// Logo pink color palette
+
+// Navbar color palette
 const logoColors = {
-  primary: '#FF69B4', // Hot pink - main logo color
-  secondary: '#FF1493', // Deep pink - darker shade
-  light: '#FFB6C1', // Light pink - for accents
-  dark: '#C71585', // Medium violet red - very dark pink
-  background: '#FFF5F7', // Super light pink - almost white
-  lighterBg: '#FFF9FA', // Even lighter - subtle pink tint
-  gradient: 'linear-gradient(135deg, #FF69B4 0%, #FF1493 100%)', // Pink gradient from logo
-  softGradient: 'linear-gradient(135deg, #FFF0F3 0%, #FFE4E8 100%)', // Very soft pink gradient
+  primary: '#fe7e8b', // Navbar primary color
+  secondary: '#e65c70', // Navbar secondary color
+  light: '#ffd1d4', // Navbar light color
+  dark: '#d64555', // Navbar dark color
+  background: '#fff5f6', // Super light - almost white
+  lighterBg: '#fff9fa', // Even lighter - subtle tint
+  gradient: 'linear-gradient(135deg, #fe7e8b 0%, #e65c70 100%)', // Navbar gradient
+  softGradient: 'linear-gradient(135deg, #fff5f6 0%, #ffd1d4 100%)', // Very soft gradient
 };
 
 export default function Cart() {
@@ -99,17 +101,40 @@ export default function Cart() {
                 <tr key={item._id}>
                   <td>
                     <div className="d-flex align-items-center">
-                      <img
-                        src={`${process.env.REACT_APP_API_URL}${item.image[0]}`}
-                        alt={item.name}
-                        className="cart-item-img"
-                        style={{ width: '50px', height: '50px', objectFit: 'cover', borderRadius: '8px', marginRight: '1rem' }}
-                      />
-                      <span style={{ color: '#2D3748' }}>{item.name}</span>
+                      {item.isBundle ? (
+                        <div style={{ width: '50px', height: '50px', background: '#f8f9fa', borderRadius: '8px', marginRight: '1rem', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                          <FaBox style={{ color: logoColors.primary, fontSize: '24px' }} />
+                        </div>
+                      ) : (
+                        <img
+                          src={item.image[0].startsWith('http') ? item.image[0] : `${process.env.REACT_APP_API_URL}${item.image[0].startsWith('/') ? '' : '/'}${item.image[0]}`}
+                          alt={item.name}
+                          className="cart-item-img"
+                          style={{ width: '50px', height: '50px', objectFit: 'cover', borderRadius: '8px', marginRight: '1rem' }}
+                        />
+                      )}
+                      <div>
+                        <span style={{ color: '#2D3748', fontWeight: '500' }}>
+                          {item.isBundle ? `${item.name} Bundle` : item.name}
+                          {item.isBundle && item.bundleProducts && (
+                            <span style={{ color: '#718096', fontSize: '0.85rem', display: 'block' }}>
+                              ({item.bundleProducts.length} products)
+                            </span>
+                          )}
+                          {!item.isBundle && (item.selectedSize || item.selectedColor) && (
+                            <div style={{ color: '#718096', fontSize: '0.8rem', marginTop: '4px' }}>
+                              {item.selectedSize && <span className="me-2">Size: {item.selectedSize}</span>}
+                              {item.selectedColor && <span>Color: {item.selectedColor}</span>}
+                            </div>
+                          )}
+                        </span>
+                      </div>
                     </div>
                   </td>
-                  <td style={{ color: logoColors.primary, fontWeight: '600' }}>Rs. {item.discountedPrice}</td>
+                  <td style={{ color: logoColors.primary, fontWeight: '600' }}>Rs. {item.discountedPrice || item.price}</td>
+
                   <td>
+
                     <input
                       type="number"
                       min="1"
@@ -125,7 +150,8 @@ export default function Cart() {
                       }}
                     />
                   </td>
-                  <td style={{ color: logoColors.primary, fontWeight: '600' }}>Rs. {(item.discountedPrice * item.quantity).toFixed(2)}</td>
+
+                  <td style={{ color: logoColors.primary, fontWeight: '600' }}>Rs. {((item.discountedPrice || item.price) * item.quantity).toFixed(2)}</td>
                   <td>
                     <Button
                       size="sm"
@@ -177,15 +203,21 @@ export default function Cart() {
                 <Row>
                   <Col xs={4}>
                     <img
-                      src={`${process.env.REACT_APP_API_URL}${item.image[0]}`}
+                      src={item.image[0].startsWith('http') ? item.image[0] : `${process.env.REACT_APP_API_URL}${item.image[0].startsWith('/') ? '' : '/'}${item.image[0]}`}
                       alt={item.name}
                       className="cart-item-img-mobile"
                       style={{ width: '100%', height: '80px', objectFit: 'cover', borderRadius: '8px' }}
                     />
                   </Col>
                   <Col xs={8}>
-                    <h5 style={{ color: '#2D3748' }}>{item.name}</h5>
-                    <div className="mb-2" style={{ color: logoColors.primary, fontWeight: '600' }}>Rs. {item.discountedPrice}</div>
+                    <h5 style={{ color: '#2D3748' }}>{item.isBundle ? `${item.name} Bundle` : item.name}</h5>
+                    {!item.isBundle && (item.selectedSize || item.selectedColor) && (
+                      <div className="mb-1" style={{ color: '#718096', fontSize: '0.8rem' }}>
+                        {item.selectedSize && <span className="me-2">Size: {item.selectedSize}</span>}
+                        {item.selectedColor && <span>Color: {item.selectedColor}</span>}
+                      </div>
+                    )}
+                    <div className="mb-2" style={{ color: logoColors.primary, fontWeight: '600' }}>Rs. {item.discountedPrice || item.price}</div>
                     <div className="d-flex align-items-center mb-2">
                       <span className="me-2" style={{ color: '#4A5568' }}>Qty:</span>
                       <input
@@ -204,7 +236,7 @@ export default function Cart() {
                       />
                     </div>
                     <div className="mb-2">
-                      <strong style={{ color: '#2D3748' }}>Total: <span style={{ color: logoColors.primary }}>Rs. {(item.discountedPrice * item.quantity).toFixed(2)}</span></strong>
+                      <strong style={{ color: '#2D3748' }}>Total: <span style={{ color: logoColors.primary }}>Rs. {((item.discountedPrice || item.price) * item.quantity).toFixed(2)}</span></strong>
                     </div>
                     <Button
                       size="sm"
@@ -301,27 +333,34 @@ export default function Cart() {
                 to="/checkout"
                 className="btn w-100 w-md-auto"
                 style={{
-                  background: logoColors.gradient,
+                  background: 'linear-gradient(135deg, #e8304a 0%, #c41a32 100%)',
                   color: 'white',
                   border: 'none',
-                  padding: '0.75rem 1.5rem',
+                  padding: '0.5rem 1.2rem',
                   borderRadius: '8px',
                   fontWeight: '600',
                   textDecoration: 'none',
-                  transition: 'all 0.3s ease'
+                  transition: 'all 0.3s ease',
+                  fontSize: '0.9rem',
+                  boxShadow: '0 4px 12px rgba(200,25,50,0.4)',
+                  letterSpacing: '0.2px',
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: '6px'
                 }}
                 onMouseEnter={(e) => {
-                  e.target.style.opacity = '0.9';
-                  e.target.style.transform = 'translateY(-2px)';
-                  e.target.style.boxShadow = `0 4px 12px ${logoColors.primary}40`;
+                  e.currentTarget.style.background = 'linear-gradient(135deg, #c41a32 0%, #a01025 100%)';
+                  e.currentTarget.style.transform = 'translateY(-2px)';
+                  e.currentTarget.style.boxShadow = '0 6px 20px rgba(180,20,40,0.5)';
                 }}
                 onMouseLeave={(e) => {
-                  e.target.style.opacity = '1';
-                  e.target.style.transform = 'translateY(0)';
-                  e.target.style.boxShadow = 'none';
+                  e.currentTarget.style.background = 'linear-gradient(135deg, #e8304a 0%, #c41a32 100%)';
+                  e.currentTarget.style.transform = 'translateY(0)';
+                  e.currentTarget.style.boxShadow = '0 4px 12px rgba(200,25,50,0.4)';
                 }}
               >
-                Proceed to Checkout
+                Proceed to Checkout →
               </Link>
             </Col>
           </Row>

@@ -6,10 +6,15 @@ import { useCart } from '../components/CartContext';
 import './heroSlider.css';
 import { useNavigate } from 'react-router-dom';
 
-// Logo pink color palette - only for button
-const auraColor = {
-  primary: '#FF69B4', // Hot pink - main logo color
-  gradient: 'linear-gradient(135deg, #FF69B4 0%, #FF1493 100%)', // Pink gradient from logo
+// Navbar color palette
+const logoColors = {
+  primary: '#fe7e8b', // Navbar primary color
+  secondary: '#e65c70', // Navbar secondary color
+  light: '#ffd1d4', // Navbar light color
+  dark: '#d64555', // Navbar dark color
+  background: '#fff5f6', // Super light - almost white
+  gradient: 'linear-gradient(135deg, #fe7e8b 0%, #e65c70 100%)', // Navbar gradient
+  softGradient: 'linear-gradient(135deg, #fff5f6 0%, #ffd1d4 100%)', // Very soft gradient
 };
 
 export default function BottomProducts() {
@@ -39,9 +44,10 @@ export default function BottomProducts() {
           throw new Error('Unexpected API response: expected an array of products');
         }
 
-        const filtered = products.filter(p =>
-          p?.category?.toLowerCase()?.includes('bottom')
-        );
+        const filtered = products.filter(p => {
+          const cat = typeof p?.category === 'object' ? p.category.name : p?.category;
+          return cat?.toLowerCase()?.includes('bottom');
+        });
 
         setBottoms(filtered);
         setError(filtered.length === 0 ? 'No bottoms found' : null);
@@ -64,50 +70,116 @@ export default function BottomProducts() {
     });
   };
 
+  // Helper function to get correct image URL
+  const getProductImage = (product) => {
+    if (!product?.image?.[0]) return '/placeholder.jpg';
+
+    // If it's already a full URL
+    if (product.image[0].startsWith('http')) {
+      return product.image[0];
+    }
+
+    // Remove any double slashes and ensure correct path
+    const imagePath = product.image[0].startsWith('/')
+      ? product.image[0]
+      : `/${product.image[0]}`;
+
+    return `${process.env.REACT_APP_API_URL}${imagePath}`;
+  };
+
   const renderProductCard = (product) => (
     <Col key={product._id || product.id}>
-      <Card className="product-card h-100 border-0 shadow-sm">
-        <div className="product-image-container">
+      <Card className="product-card h-100 border-0" style={{
+        background: 'white',
+        borderRadius: '12px',
+        overflow: 'hidden',
+        transition: 'all 0.3s ease',
+        boxShadow: '0 4px 12px rgba(0,0,0,0.05)',
+        cursor: 'pointer'
+      }}
+        onMouseEnter={(e) => {
+          e.currentTarget.style.transform = 'translateY(-5px)';
+          e.currentTarget.style.boxShadow = `0 8px 20px ${logoColors.primary}30`;
+        }}
+        onMouseLeave={(e) => {
+          e.currentTarget.style.transform = 'translateY(0)';
+          e.currentTarget.style.boxShadow = '0 4px 12px rgba(0,0,0,0.05)';
+        }}>
+        <div className="product-image-container" style={{ position: 'relative' }}>
           <Card.Img
-            onClick={() => navigate(`/catalog/${product.slug}`)}
+            onClick={() => navigate(`/catalog/${product._id}`)}
             variant="top"
-            src={
-              product.image?.[0]
-                ? `${process.env.REACT_APP_API_URL}${product.image[0]}`
-                : '/placeholder.jpg'
-            }
+            src={getProductImage(product)}
             alt={product.name}
             className="product-img"
+            style={{
+              height: '200px',
+              objectFit: 'cover',
+              transition: 'transform 0.3s ease'
+            }}
+            onMouseEnter={(e) => {
+              e.target.style.transform = 'scale(1.05)';
+            }}
+            onMouseLeave={(e) => {
+              e.target.style.transform = 'scale(1)';
+            }}
             onError={(e) => {
               e.target.src = '/placeholder.jpg';
             }}
           />
           {product.discountedPrice < product.originalPrice && (
-            <div className="discount-badge">
+            <div style={{
+              position: 'absolute',
+              top: '10px',
+              left: '10px',
+              background: logoColors.gradient,
+              color: 'white',
+              padding: '4px 8px',
+              borderRadius: '4px',
+              fontSize: '0.75rem',
+              fontWeight: 'bold',
+              zIndex: 1
+            }}>
               {Math.round(100 - (product.discountedPrice / product.originalPrice) * 100)}% OFF
             </div>
           )}
         </div>
-        <Card.Body className="d-flex flex-column">
-          <Card.Title className="product-title">{product.name}</Card.Title>
-          <Card.Text className="text-muted product-category">
-            {product.category || 'Uncategorized'}
+        <Card.Body className="d-flex flex-column" style={{ padding: '1rem' }}>
+          <Card.Title
+            className="product-title"
+            style={{
+              fontSize: '1rem',
+              fontWeight: '600',
+              color: '#2D3748',
+              marginBottom: '0.25rem',
+              cursor: 'pointer'
+            }}
+            onClick={() => navigate(`/catalog/${product._id}`)}
+          >
+            {product.name}
+          </Card.Title>
+          <Card.Text className="product-category" style={{
+            fontSize: '0.85rem',
+            marginBottom: '0.5rem',
+            color: '#718096'
+          }}>
+            {typeof product.category === 'object' ? product.category.name : (product.category || 'Uncategorized')}
           </Card.Text>
           <div className="mt-auto">
             <div className="d-flex justify-content-between align-items-center mb-2">
               <div className="price">
                 {product.discountedPrice < product.originalPrice && (
-                  <span className="original-price text-muted text-decoration-line-through me-2">
+                  <span className="original-price text-muted text-decoration-line-through me-2" style={{ fontSize: '0.8rem' }}>
                     Rs. {product.originalPrice}
                   </span>
                 )}
-                <span className="current-price fw-bold">
+                <span className="current-price fw-bold" style={{ color: logoColors.primary, fontSize: '1.1rem' }}>
                   Rs. {product.discountedPrice || product.price}
                 </span>
               </div>
-              <div className="rating">
-                <FaStar className="text-warning" />
-                <span className="ms-1">{product.rating || '4.5'}</span>
+              <div className="rating" style={{ fontSize: '0.85rem' }}>
+                <FaStar style={{ color: logoColors.primary }} />
+                <span className="ms-1" style={{ color: '#4A5568' }}>{product.rating || '4.5'}</span>
               </div>
             </div>
             <button
@@ -115,7 +187,7 @@ export default function BottomProducts() {
               onClick={() => handleAddToCart(product)}
               disabled={product.stock <= 0}
               style={{
-                background: product.stock > 0 ? auraColor.gradient : '#e2e8f0',
+                background: product.stock > 0 ? logoColors.gradient : '#e2e8f0',
                 color: product.stock > 0 ? 'white' : '#718096',
                 border: 'none',
                 padding: '0.6rem',
@@ -129,7 +201,7 @@ export default function BottomProducts() {
                 if (product.stock > 0) {
                   e.target.style.opacity = '0.9';
                   e.target.style.transform = 'translateY(-2px)';
-                  e.target.style.boxShadow = `0 4px 12px ${auraColor.primary}40`;
+                  e.target.style.boxShadow = `0 4px 12px ${logoColors.primary}40`;
                 }
               }}
               onMouseLeave={(e) => {
@@ -159,35 +231,47 @@ export default function BottomProducts() {
   );
 
   return (
-    <Container className="tshirt-products-page py-3 py-md-5">
-      <div className="page-header-wrapper mb-4 mb-md-5">
-        <h1 className="page-header">Bottom Collection</h1>
-      </div>
+    <Container fluid style={{ background: logoColors.background, minHeight: '100vh', padding: '2rem 0' }}>
+      <Container className="tshirt-products-page py-3 py-md-5">
+        <div className="page-header-wrapper mb-4 mb-md-5 text-center">
+          <h1 className="page-header" style={{ color: logoColors.dark }}>Bottom Collection</h1>
 
-      {loading ? (
-        <div className="text-center my-5 py-5">
-          <Spinner animation="border" variant="primary" />
-          <p className="mt-3">Loading bottoms...</p>
+          {/* Decorative line under header */}
+          <div style={{
+            height: '2px',
+            background: `linear-gradient(90deg, transparent, ${logoColors.primary}40, transparent)`,
+            width: '150px',
+            margin: '1rem auto 2rem auto'
+          }} />
         </div>
-      ) : error ? (
-        <Alert variant="danger" className="text-center">
-          {error}
-        </Alert>
-      ) : (
-        <>
-          <div className="d-block d-md-none">
-            <Row xs={2} className="g-3">
-              {bottoms.slice(0, 4).map(product => renderProductCard(product))}
-            </Row>
-          </div>
 
-          <div className="d-none d-md-block">
-            <Row xs={1} sm={2} md={3} lg={4} className="g-4">
-              {bottoms.map(product => renderProductCard(product))}
-            </Row>
+        {loading ? (
+          <div className="text-center my-5 py-5">
+            <Spinner animation="border" style={{ color: logoColors.primary }} />
+            <p className="mt-3" style={{ color: '#4A5568' }}>Loading bottoms...</p>
           </div>
-        </>
-      )}
+        ) : error ? (
+          <Alert variant="danger" className="text-center" style={{ borderRadius: '12px' }}>
+            {error}
+          </Alert>
+        ) : (
+          <>
+            {/* Mobile view - show only 4 products (2x2 grid) */}
+            <div className="d-block d-md-none">
+              <Row xs={2} className="g-3">
+                {bottoms.slice(0, 4).map(product => renderProductCard(product))}
+              </Row>
+            </div>
+
+            {/* Tablet/Desktop view - show all products with responsive columns */}
+            <div className="d-none d-md-block">
+              <Row xs={1} sm={2} md={3} lg={4} className="g-4">
+                {bottoms.map(product => renderProductCard(product))}
+              </Row>
+            </div>
+          </>
+        )}
+      </Container>
     </Container>
   );
 }

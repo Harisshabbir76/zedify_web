@@ -24,21 +24,57 @@ export const CartProvider = ({ children }) => {
   }, [cart]);
 
   const addToCart = (product) => {
-    setCart(prevCart => {
-      const existingItem = prevCart.find(item => item._id === product._id);
-
-      if (existingItem) {
-        const updatedCart = prevCart.map(item =>
-          item._id === product._id
-            ? { ...item, quantity: item.quantity + (product.quantity || 1) }
-            : item
+    if (product.isBundle) {
+      // Add bundle as single cart item
+      const bundleItem = {
+        ...product,
+        _id: `bundle_${product._id}`,
+        quantity: product.quantity || 1,
+        isBundle: true,
+        bundleProducts: product.products,
+        price: product.bundlePrice,
+        discountedPrice: product.bundlePrice // Use bundle price
+      };
+      
+      setCart(prevCart => {
+        const existingBundle = prevCart.find(item => item._id === bundleItem._id);
+        if (existingBundle) {
+          const updatedCart = prevCart.map(item =>
+            item._id === bundleItem._id
+              ? { ...item, quantity: item.quantity + bundleItem.quantity }
+              : item
+          );
+          return updatedCart;
+        } else {
+          return [...prevCart, bundleItem];
+        }
+      });
+    } else {
+      // Regular product logic
+      setCart(prevCart => {
+        const existingItem = prevCart.find(item => 
+          item._id === product._id && 
+          item.selectedSize === product.selectedSize && 
+          item.selectedColor === product.selectedColor
         );
-        return updatedCart;
-      } else {
-        return [...prevCart, { ...product, quantity: product.quantity || 1 }];
-      }
-    });
+
+        if (existingItem) {
+          const updatedCart = prevCart.map(item =>
+            (item._id === product._id && 
+             item.selectedSize === product.selectedSize && 
+             item.selectedColor === product.selectedColor)
+              ? { ...item, quantity: item.quantity + (product.quantity || 1) }
+              : item
+          );
+          return updatedCart;
+        } else {
+          return [...prevCart, { ...product, quantity: product.quantity || 1 }];
+        }
+      });
+    }
   };
+
+
 
   const removeFromCart = (productId) => {
     setCart(prevCart => prevCart.filter(item => item._id !== productId));

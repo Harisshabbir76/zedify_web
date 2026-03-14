@@ -2,18 +2,18 @@ import React from 'react';
 import { Dropdown } from 'react-bootstrap';
 import { FaFilter } from 'react-icons/fa';
 
-// Logo pink color palette
+// Navbar color palette
 const logoColors = {
-  primary: '#FF69B4', // Hot pink - main logo color
-  secondary: '#FF1493', // Deep pink - darker shade
-  light: '#FFB6C1', // Light pink - for accents
-  dark: '#C71585', // Medium violet red - very dark pink
-  background: '#FFF5F7', // Super light pink - almost white
-  gradient: 'linear-gradient(135deg, #FF69B4 0%, #FF1493 100%)', // Pink gradient from logo
-  softGradient: 'linear-gradient(135deg, #FFF0F3 0%, #FFE4E8 100%)', // Very soft pink gradient
+  primary: '#fe7e8b', // Navbar primary color
+  secondary: '#e65c70', // Navbar secondary color
+  light: '#ffd1d4', // Navbar light color
+  dark: '#d64555', // Navbar dark color
+  background: '#fff5f6', // Super light - almost white
+  gradient: 'linear-gradient(135deg, #fe7e8b 0%, #e65c70 100%)', // Navbar gradient
+  softGradient: 'linear-gradient(135deg, #fff5f6 0%, #ffd1d4 100%)', // Very soft gradient
 };
 
-const FilterComponent = ({ sortOption, onSortChange }) => {
+const FilterComponent = ({ sortOption, onSortChange, categories = [], selectedCategory, onCategoryChange }) => {
   const sortOptions = [
     { value: 'default', label: 'Default' },
     { value: 'price-high-low', label: 'Price: High to Low' },
@@ -24,6 +24,54 @@ const FilterComponent = ({ sortOption, onSortChange }) => {
 
   return (
     <div className="d-flex justify-content-end mb-3">
+      {categories && categories.length > 0 && onCategoryChange && (
+        <Dropdown>
+          <Dropdown.Toggle
+            variant="outline-secondary"
+            id="dropdown-category"
+            className="me-2"
+            style={{
+              borderColor: logoColors.light,
+              color: logoColors.dark,
+              background: logoColors.softGradient,
+              padding: '0.5rem 1rem',
+              borderRadius: '8px',
+              fontWeight: '500',
+              transition: 'all 0.3s ease'
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.background = logoColors.gradient;
+              e.currentTarget.style.color = 'white';
+              e.currentTarget.style.borderColor = 'transparent';
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.background = logoColors.softGradient;
+              e.currentTarget.style.color = logoColors.dark;
+              e.currentTarget.style.borderColor = logoColors.light;
+            }}
+          >
+            {selectedCategory || 'All Categories'}
+          </Dropdown.Toggle>
+          <Dropdown.Menu>
+            <Dropdown.Item onClick={() => onCategoryChange('')}>All Categories</Dropdown.Item>
+            {categories.map(category => {
+              const catName = typeof category === 'object' ? category.name : category;
+              const catId = typeof category === 'object' ? (category._id || category.id || category.name) : category;
+              
+              return (
+                <Dropdown.Item
+                  key={catId}
+                  onClick={() => onCategoryChange(catName)}
+                  active={selectedCategory === catName}
+                >
+                  {catName}
+                </Dropdown.Item>
+              );
+            })}
+          </Dropdown.Menu>
+        </Dropdown>
+      )}
+
       <Dropdown>
         <Dropdown.Toggle
           variant="outline-secondary"

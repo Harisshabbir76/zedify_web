@@ -1,23 +1,26 @@
-import React from 'react'
+﻿import React from 'react'
 import Categories from '../components/category'
+import HomeFeaturedCategories from '../components/HomeFeaturedCategories'
+import TopRatedProducts from '../components/TopRatedProducts'
+import LatestBundles from '../components/LatestBundles'
+import FAQs from '../components/FAQs'
 import { Link } from 'react-router-dom'
 import { FiArrowRight } from 'react-icons/fi';
 import HeroSlider from '../components/HeroSlider'
 import { useEffect, useState } from 'react';
-import Tshirt from '../components/t-shirt'
-import Bottom from '../components/bottom'
 import ContactUs from './contact-us'
+import axios from 'axios';
 
-// Logo pink color palette - much lighter backgrounds
+// Navbar color palette - light backgrounds
 const logoColors = {
-  primary: '#FF69B4', // Hot pink - main logo color
-  secondary: '#FF1493', // Deep pink - darker shade
-  light: '#FFB6C1', // Light pink - for accents
-  dark: '#C71585', // Medium violet red - very dark pink
-  background: '#FFF5F7', // Super light pink - almost white with hint of pink
-  lighterBg: '#FFF9FA', // Even lighter - subtle pink tint
-  gradient: 'linear-gradient(135deg, #FF69B4 0%, #FF1493 100%)', // Pink gradient from logo
-  softGradient: 'linear-gradient(135deg, #FFF0F3 0%, #FFE4E8 100%)', // Very soft pink gradient
+  primary: '#fe7e8b', // Navbar primary color
+  secondary: '#e65c70', // Navbar secondary color
+  light: '#ffd1d4', // Navbar light color
+  dark: '#d64555', // Navbar dark color
+  background: '#fff5f6', // Super light - almost white
+  lighterBg: '#fff9fa', // Even lighter - subtle tint
+  gradient: 'linear-gradient(135deg, #fe7e8b 0%, #e65c70 100%)', // Navbar gradient
+  softGradient: 'linear-gradient(135deg, #fff5f6 0%, #ffd1d4 100%)', // Very soft gradient
 };
 
 export default function Home() {
@@ -149,40 +152,26 @@ export default function Home() {
       {/* Divider after Categories */}
       <div style={sectionDividerStyle}></div>
 
-      {/* Featured Products Section */}
-      <div style={{
-        background: logoColors.background,
-        padding: '3rem 0',
-      }}>
-        <div style={{ textAlign: 'center', marginBottom: '2.5rem' }}>
-          <h2 style={sectionTitleStyle}>
-            Featured <span style={{ color: logoColors.primary }}>T-Shirts</span>
-          </h2>
-          <p style={sectionSubtitleStyle}>
-            Express yourself with our exclusive collection
-          </p>
-        </div>
-        <Tshirt />
-      </div>
+      {/* Featured Categories Products - Shows products from categories with showOnHome enabled */}
+      <HomeFeaturedCategories />
 
-      {/* Divider after Featured Products */}
+      {/* Divider after Featured Categories */}
       <div style={sectionDividerStyle}></div>
 
-      {/* Bottom Component */}
-      <div style={{ background: logoColors.background }}>
-        <Bottom />
-      </div>
+      {/* Top Rated Products - Shows highest rated products */}
+      <TopRatedProducts />
 
-      {/* Divider after Bottom */}
+      {/* Divider after Top Products */}
       <div style={sectionDividerStyle}></div>
 
-      {/* Contact Section */}
-      <div style={{
-        background: logoColors.background,
-        padding: '3rem 0',
-      }}>
-        <ContactUs />
-      </div>
+      {/* Latest Bundles - Shows latest bundles */}
+      <LatestBundles />
+
+      {/* Divider after Bundles */}
+      <div style={sectionDividerStyle}></div>
+
+      {/* FAQs Section */}
+      <FAQs />
 
     </div>
   )

@@ -14,17 +14,22 @@ const CategoryTabs = ({ categories, activeCategory, onCategoryChange }) => {
           All Products
         </Nav.Link>
       </Nav.Item>
-      {categories.map(category => (
-        <Nav.Item key={category}>
-          <Nav.Link 
-            eventKey={category} 
-            active={activeCategory === category}
-            onClick={() => onCategoryChange(category)}
-          >
-            {category}
-          </Nav.Link>
-        </Nav.Item>
-      ))}
+      {categories.map(category => {
+        const catName = typeof category === 'object' ? category.name : category;
+        const catId = typeof category === 'object' ? (category._id || category.id || category.name) : category;
+        
+        return (
+          <Nav.Item key={catId}>
+            <Nav.Link 
+              eventKey={catName} 
+              active={activeCategory === catName}
+              onClick={() => onCategoryChange(catName)}
+            >
+              {catName}
+            </Nav.Link>
+          </Nav.Item>
+        );
+      })}
     </Nav>
   );
 };

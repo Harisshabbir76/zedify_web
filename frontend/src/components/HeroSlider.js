@@ -1,62 +1,90 @@
-import React, { useState, useEffect } from 'react';
+﻿import React, { useState, useEffect } from 'react';
+import axios from 'axios';
 import './heroSlider.css';
-import hero1 from '../images/hero1.png';
-import hero2 from '../images/hero2.png';
-import hero3 from '../images/hero3.png';
 
-// Logo pink color palette
+// Navbar color palette
 const logoColors = {
-  primary: '#FF69B4', // Hot pink - main logo color
-  secondary: '#FF1493', // Deep pink - darker shade
-  light: '#FFB6C1', // Light pink - for accents
-  dark: '#C71585', // Medium violet red - very dark pink
-  background: '#FFF5F7', // Super light pink - almost white
-  gradient: 'linear-gradient(135deg, #FF69B4 0%, #FF1493 100%)', // Pink gradient from logo
-  softGradient: 'linear-gradient(135deg, #FFF0F3 0%, #FFE4E8 100%)', // Very soft pink gradient
+  primary: '#fe7e8b', // Navbar primary color
+  secondary: '#e65c70', // Navbar secondary color
+  light: '#ffd1d4', // Navbar light color
+  dark: '#d64555', // Navbar dark color
+  background: '#fff5f6', // Super light - almost white
+  gradient: 'linear-gradient(135deg, #fe7e8b 0%, #e65c70 100%)', // Navbar gradient
+  softGradient: 'linear-gradient(135deg, #fff5f6 0%, #ffd1d4 100%)', // Very soft gradient
 };
 
 const HeroSlider = () => {
   const [currentSlide, setCurrentSlide] = useState(0);
+  const [slides, setSlides] = useState([]);
+  const [searchQuery, setSearchQuery] = useState('');
 
-  const slides = [
-    {
-      image: hero1,
-      title: 'Summer Collection',
-      subtitle: 'Discover our new arrivals',
-      ctaText: 'Shop Now',
-      ctaLink: '/catalog'
-    },
-    {
-      image: hero2,
-      title: 'Winter Specials',
-      subtitle: 'Up to 50% off selected items',
-      ctaText: 'View Offers',
-      ctaLink: '/catalog'
-    },
-    {
-      image: hero3,
-      title: 'New Arrivals',
-      subtitle: 'Fresh styles for the season',
-      ctaText: 'Explore',
-      ctaLink: '/new-arrivals'
-    }
-  ];
+  useEffect(() => {
+    const fetchSlides = async () => {
+      try {
+        const res = await axios.get(`${process.env.REACT_APP_API_URL}/api/hero-slides`);
+        if (res.data && res.data.length > 0) {
+          setSlides(res.data);
+        } else {
+          // Fallback slides if API returns empty
+          setSlides([
+            {
+              image: 'https://via.placeholder.com/1920x800',
+              mainTitle: 'HAIR DRYER',
+              subtitle: 'Checkout latest dryer',
+              description: 'Made from Soft. Durable. US-grown Supima Cotton.',
+              ctaText: 'Shop Now',
+              ctaLink: '/catalog'
+            }
+          ]);
+        }
+      } catch (err) {
+        console.error('Error fetching hero slides:', err);
+        // Fallback slides on error
+        setSlides([
+          {
+            image: 'https://via.placeholder.com/1920x800',
+            mainTitle: 'HAIR DRYER',
+            subtitle: 'Checkout latest dryer',
+            description: 'Made from Soft. Durable. US-grown Supima Cotton.',
+            ctaText: 'Shop Now',
+            ctaLink: '/catalog'
+          }
+        ]);
+      }
+    };
+    fetchSlides();
+  }, []);
 
   // Auto-advance slides every 5 seconds
   useEffect(() => {
+    if (slides.length === 0) return;
+
     const interval = setInterval(() => {
       goToNext();
     }, 5000);
     return () => clearInterval(interval);
-  }, [currentSlide]);
+  }, [currentSlide, slides.length]);
 
   const goToPrev = () => {
+    if (slides.length === 0) return;
     setCurrentSlide((prev) => (prev === 0 ? slides.length - 1 : prev - 1));
   };
 
   const goToNext = () => {
+    if (slides.length === 0) return;
     setCurrentSlide((prev) => (prev + 1) % slides.length);
   };
+
+  const handleSearch = (e) => {
+    e.preventDefault();
+    if (searchQuery.trim()) {
+      window.location.href = `/search?query=${encodeURIComponent(searchQuery.trim())}`;
+    }
+  };
+
+  if (slides.length === 0) {
+    return null; // Don't render slider if there are no slides 
+  }
 
   return (
     <div className="hero-slider" style={{ background: logoColors.background }}>
@@ -95,38 +123,187 @@ const HeroSlider = () => {
           className={`slide ${index === currentSlide ? 'active' : ''}`}
           style={{ backgroundImage: `url(${slide.image})` }}
         >
-          <div className="slide-content">
-            <h1 style={{ color: 'white', textShadow: `2px 2px 4px ${logoColors.dark}` }}>{slide.title}</h1>
-            <p style={{ color: 'rgba(255,255,255,0.95)', textShadow: `1px 1px 2px ${logoColors.dark}` }}>{slide.subtitle}</p>
-            <a
-              href={slide.ctaLink}
-              className="cta-button"
-              style={{
-                background: logoColors.gradient,
-                color: 'white',
-                border: 'none',
-                padding: '0.75rem 2rem',
-                borderRadius: '50px',
-                fontWeight: '600',
-                fontSize: '1rem',
-                textDecoration: 'none',
-                transition: 'all 0.3s ease',
-                boxShadow: `0 4px 15px ${logoColors.primary}40`,
-                display: 'inline-block'
-              }}
-              onMouseEnter={(e) => {
-                e.target.style.opacity = '0.9';
-                e.target.style.transform = 'translateY(-2px)';
-                e.target.style.boxShadow = `0 6px 20px ${logoColors.primary}60`;
-              }}
-              onMouseLeave={(e) => {
-                e.target.style.opacity = '1';
-                e.target.style.transform = 'translateY(0)';
-                e.target.style.boxShadow = `0 4px 15px ${logoColors.primary}40`;
-              }}
-            >
-              {slide.ctaText}
-            </a>
+          <div
+            className="slide-content-left"
+            style={{
+              position: 'absolute',
+              top: '50%',
+              left: '10%',
+              transform: 'translateY(-50%)',
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'flex-start',
+              width: '90%',
+              maxWidth: '700px',
+              color: 'white',
+              textShadow: '2px 2px 4px rgba(0,0,0,0.3)',
+              zIndex: 2
+            }}
+          >
+            {/* Main Title - Dynamic sizing */}
+            <h1 style={{
+              fontSize: 'clamp(2rem, 5vw, 4rem)',
+              fontWeight: '700',
+              marginBottom: '1rem',
+              lineHeight: '1.2',
+              color: 'white',
+              width: '100%',
+              wordWrap: 'break-word',
+              textAlign: 'left'
+            }}>
+              {slide.mainTitle}
+            </h1>
+
+            {/* Subtitle - Dynamic sizing */}
+            <p style={{
+              fontSize: 'clamp(1rem, 2.5vw, 1.5rem)',
+              marginBottom: '0.75rem',
+              color: 'rgba(255,255,255,0.95)',
+              lineHeight: '1.4',
+              width: '100%',
+              wordWrap: 'break-word',
+              textAlign: 'left'
+            }}>
+              {slide.subtitle}
+            </p>
+
+            {/* Description - Dynamic sizing */}
+            <p style={{
+              fontSize: 'clamp(0.9rem, 2vw, 1.2rem)',
+              marginBottom: '2rem',
+              color: 'rgba(255,255,255,0.9)',
+              lineHeight: '1.6',
+              width: '100%',
+              wordWrap: 'break-word',
+              textAlign: 'left'
+            }}>
+              {slide.description}
+            </p>
+
+            {/* Shop Now button - Left aligned */}
+            <div style={{
+              display: 'flex',
+              justifyContent: 'flex-start',
+              width: '100%',
+              marginBottom: 'clamp(1.5rem, 3vh, 2.5rem)'
+            }}>
+              <a
+                href={slide.ctaLink}
+                className="slide-shop-btn"
+                style={{
+                  background: logoColors.gradient,
+                  color: 'white',
+                  border: 'none',
+                  padding: 'clamp(0.5rem, 2vw, 0.8rem) clamp(1.5rem, 4vw, 2.5rem)',
+                  borderRadius: '50px',
+                  fontWeight: '600',
+                  fontSize: 'clamp(0.9rem, 2vw, 1.1rem)',
+                  textDecoration: 'none',
+                  transition: 'all 0.3s ease',
+                  boxShadow: `0 4px 15px ${logoColors.primary}40`,
+                  display: 'inline-block',
+                  textAlign: 'center',
+                  minWidth: 'clamp(120px, 20vw, 160px)'
+                }}
+                onMouseEnter={(e) => {
+                  e.target.style.opacity = '0.9';
+                  e.target.style.transform = 'translateY(-2px)';
+                  e.target.style.boxShadow = `0 6px 20px ${logoColors.primary}60`;
+                }}
+                onMouseLeave={(e) => {
+                  e.target.style.opacity = '1';
+                  e.target.style.transform = 'translateY(0)';
+                  e.target.style.boxShadow = `0 4px 15px ${logoColors.primary}40`;
+                }}
+              >
+                {slide.ctaText}
+              </a>
+            </div>
+
+            {/* Search Bar - Left aligned */}
+            <div style={{
+              marginBottom: 'clamp(1rem, 2vh, 1.5rem)',
+              width: '100%',
+              maxWidth: 'min(500px, 90%)'
+            }}>
+              <form
+                onSubmit={handleSearch}
+                style={{
+                  display: 'flex',
+                  alignItems: 'stretch',
+                  background: 'white',
+                  borderRadius: '50px',
+                  overflow: 'hidden',
+                  boxShadow: '0 4px 15px rgba(0,0,0,0.1)',
+                  width: '100%',
+                  height: '48px'
+                }}
+              >
+                <input
+                  type="text"
+                  placeholder="Search products..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  style={{
+                    flex: 1,
+                    border: 'none',
+                    padding: '0 1.2rem',
+                    fontSize: 'clamp(0.85rem, 2vw, 1rem)',
+                    outline: 'none',
+                    background: 'transparent',
+                    display: 'block'
+                  }}
+                />
+                <button
+                  type="submit"
+                  style={{
+                    background: logoColors.gradient,
+                    border: 'none',
+                    color: 'white',
+                    width: '56px',
+                    flexShrink: 0,
+                    cursor: 'pointer',
+                    transition: 'opacity 0.3s ease',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    padding: 0
+                  }}
+                  onMouseEnter={(e) => e.currentTarget.style.opacity = '0.9'}
+                  onMouseLeave={(e) => e.currentTarget.style.opacity = '1'}
+                >
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ display: 'block' }}>
+                    <path d="M21 21L15 15M17 10C17 13.866 13.866 17 10 17C6.13401 17 3 13.866 3 10C3 6.13401 6.13401 3 10 3C13.866 3 17 6.13401 17 10Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                  </svg>
+                </button>
+              </form>
+            </div>
+
+            {/* Sign Up Link - Left aligned */}
+            <div style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'flex-start',
+              gap: '0.5rem',
+              fontSize: 'clamp(0.85rem, 2vw, 1rem)',
+              marginTop: '0.5rem',
+              flexWrap: 'wrap'
+            }}>
+              <span style={{ color: 'rgba(255,255,255,0.9)' }}>Not yet Member?</span>
+              <a
+                href="/signup"
+                style={{
+                  color: 'white',
+                  textDecoration: 'underline',
+                  fontWeight: '600',
+                  transition: 'color 0.3s ease'
+                }}
+                onMouseEnter={(e) => e.target.style.color = logoColors.primary}
+                onMouseLeave={(e) => e.target.style.color = 'white'}
+              >
+                Sign Up Now
+              </a>
+            </div>
           </div>
         </div>
       ))}

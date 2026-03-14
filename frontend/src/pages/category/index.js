@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+﻿import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import { Container, Row, Col, Card, Spinner, Alert, Button } from 'react-bootstrap';
@@ -11,16 +11,16 @@ import tshirtImg from '../../images/t-shirt.jpeg';
 import watchImg from '../../images/watch.jpeg';
 import BrowseImg from '../../images/browse.jpeg';
 
-// Logo pink color palette
+// Navbar color palette
 const logoColors = {
-  primary: '#FF69B4', // Hot pink - main logo color
-  secondary: '#FF1493', // Deep pink - darker shade
-  light: '#FFB6C1', // Light pink - for accents
-  dark: '#C71585', // Medium violet red - very dark pink
-  background: '#FFF5F7', // Super light pink - almost white
-  lighterBg: '#FFF9FA', // Even lighter - subtle pink tint
-  gradient: 'linear-gradient(135deg, #FF69B4 0%, #FF1493 100%)', // Pink gradient from logo
-  softGradient: 'linear-gradient(135deg, #FFF0F3 0%, #FFE4E8 100%)', // Very soft pink gradient
+  primary: '#fe7e8b', // Navbar primary color
+  secondary: '#e65c70', // Navbar secondary color
+  light: '#ffd1d4', // Navbar light color
+  dark: '#d64555', // Navbar dark color
+  background: '#fff5f6', // Super light - almost white
+  lighterBg: '#fff9fa', // Even lighter - subtle tint
+  gradient: 'linear-gradient(135deg, #fe7e8b 0%, #e65c70 100%)', // Navbar gradient
+  softGradient: 'linear-gradient(135deg, #fff5f6 0%, #ffd1d4 100%)', // Very soft gradient
 };
 
 const categoryImages = {
@@ -72,25 +72,25 @@ export default function Category() {
   }, []);
 
   const getCategoryImage = (category) => {
-    if (!category) return 'https://via.placeholder.com/300';
+    if (!category) return BrowseImg;
 
     const normalizedCategory = category.toLowerCase().replace(/\s+/g, '-');
     return (
       categoryImages[normalizedCategory] ||
       categoryImages[category.toLowerCase()] ||
-      'https://via.placeholder.com/300'
+      BrowseImg
     );
   };
 
   // Function to render category card
   const renderCategoryCard = (category, isBrowseAll = false) => (
-    <Col key={isBrowseAll ? 'browse-all' : category} xs={6} md={4} lg={3} className="mb-4">
+    <Col key={isBrowseAll ? 'browse-all' : (category._id || category.name || category)} xs={6} md={4} lg={3} className="mb-4">
       <Card
         className="product-card h-100 border-0"
         onClick={() =>
           isBrowseAll
             ? navigate('/category')
-            : navigate(`/category/${category.toString().replace(/\s+/g, '-')}`)
+            : navigate(`/category/${(category.name || category).toString().replace(/\s+/g, '-')}`)
         }
         style={{
           background: 'white',
@@ -112,8 +112,8 @@ export default function Category() {
         <div className="product-image-container" style={{ position: 'relative' }}>
           <Card.Img
             variant="top"
-            src={isBrowseAll ? BrowseImg : getCategoryImage(category)}
-            alt={isBrowseAll ? 'Browse All' : category}
+            src={isBrowseAll ? BrowseImg : (category.image ? (category.image.startsWith('http') ? category.image : `${process.env.REACT_APP_API_URL}${category.image.startsWith('/') ? '' : '/'}${category.image}`) : getCategoryImage(category.name || category))}
+            alt={isBrowseAll ? 'Browse All' : (category.name || category)}
             className="product-img"
             style={{
               height: '200px',
@@ -127,7 +127,7 @@ export default function Category() {
               e.target.style.transform = 'scale(1)';
             }}
             onError={(e) => {
-              e.target.src = 'https://via.placeholder.com/300';
+              e.target.src = getCategoryImage(category.name || category);
             }}
           />
         </div>
@@ -144,7 +144,7 @@ export default function Category() {
               justifyContent: 'center'
             }}
           >
-            {isBrowseAll ? 'Browse All' : category}
+            {isBrowseAll ? 'Browse All' : (category.name || category)}
             <FaChevronRight
               className="ms-2"
               style={{

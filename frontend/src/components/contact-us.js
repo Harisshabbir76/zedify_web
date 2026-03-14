@@ -1,4 +1,4 @@
-import axios from 'axios';
+﻿import axios from 'axios';
 import React, { useEffect, useState } from 'react';
 import { Spinner, Dropdown } from 'react-bootstrap';
 import {
@@ -10,17 +10,17 @@ import ReplyModal from './ReplyModal';
 
 /* ─── Design tokens (matches OrderManagement) ─── */
 const C = {
-  primary: '#FF69B4',
-  secondary: '#FF1493',
-  light: '#FFB6C1',
-  dark: '#C71585',
-  bg: '#FFF5F7',
+  primary: '#fe7e8b',
+  secondary: '#e65c70',
+  light: '#ffd1d4',
+  dark: '#d64555',
+  bg: '#fff5f6',
   border: '#FFE4EC',
   text: '#2D3748',
   subtext: '#718096',
   muted: '#A0AEC0',
-  gradient: 'linear-gradient(135deg, #FF69B4 0%, #FF1493 100%)',
-  softGrad: 'linear-gradient(135deg, #FFF0F3 0%, #FFE4E8 100%)',
+  gradient: 'linear-gradient(135deg, #fe7e8b 0%, #e65c70 100%)',
+  softGrad: 'linear-gradient(135deg, #fff5f6 0%, #ffd1d4 100%)',
 };
 
 /* ─── Injected styles ─── */
