@@ -1,4 +1,4 @@
-﻿import React from 'react'
+import React from 'react'
 import Categories from '../components/category'
 import HomeFeaturedCategories from '../components/HomeFeaturedCategories'
 import TopRatedProducts from '../components/TopRatedProducts'
@@ -8,8 +8,6 @@ import { Link } from 'react-router-dom'
 import { FiArrowRight } from 'react-icons/fi';
 import HeroSlider from '../components/HeroSlider'
 import { useEffect, useState } from 'react';
-import ContactUs from './contact-us'
-import axios from 'axios';
 
 // Navbar color palette - light backgrounds
 const logoColors = {
@@ -88,17 +86,7 @@ export default function Home() {
     margin: '0 auto',
   };
 
-  const sectionTitleStyle = {
-    fontSize: '2rem',
-    color: '#2D3748', // Dark gray
-    marginBottom: '0.5rem',
-    fontWeight: '600',
-  };
 
-  const sectionSubtitleStyle = {
-    color: '#718096', // Light gray
-    fontSize: '1rem',
-  };
 
   return (
     <div style={{ background: logoColors.background }}> {/* Consistent base background */}

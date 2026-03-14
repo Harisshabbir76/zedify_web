@@ -1,6 +1,5 @@
 import React from 'react';
 import { Nav } from 'react-bootstrap';
-import axios from 'axios';
 
 const CategoryTabs = ({ categories, activeCategory, onCategoryChange }) => {
   return (

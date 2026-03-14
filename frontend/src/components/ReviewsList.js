@@ -1,4 +1,4 @@
-﻿import React from 'react';
+import React from 'react';
 import { Card, ListGroup, Badge } from 'react-bootstrap';
 import Rating from './Rating';
 import axios from 'axios';

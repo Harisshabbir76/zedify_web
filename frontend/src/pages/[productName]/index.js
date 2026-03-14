@@ -17,9 +17,7 @@ import {
 import { 
   FiTruck, 
   FiShield, 
-  FiRotateCcw,
-  FiShoppingBag,
-  FiCheckCircle
+  FiRotateCcw
 } from 'react-icons/fi';
 import { useCart } from '../../components/CartContext';
 import RecommendedProducts from '../../components/RecommendedProducts';

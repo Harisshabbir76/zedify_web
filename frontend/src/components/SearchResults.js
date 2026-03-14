@@ -9,7 +9,6 @@ import {
   Spinner,
   Alert,
   Badge,
-  Stack,
   Button
 } from 'react-bootstrap';
 import { FaShoppingCart, FaBoxOpen, FaStar } from 'react-icons/fa';
@@ -69,12 +68,7 @@ const SearchResults = () => {
     }
   };
 
-  const getProductImage = (product) => {
-    if (!product?.image?.[0]) return '/placeholder.jpg';
-    return product.image[0].startsWith('http')
-      ? product.image[0]
-      : `${process.env.REACT_APP_API_URL}${product.image[0]}`;
-  };
+
 
   if (loading) {
     return (

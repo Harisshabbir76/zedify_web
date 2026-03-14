@@ -1,7 +1,7 @@
-﻿import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { Container, Table, Button, Form, Modal, Card, Spinner, Alert, Row, Col, Badge } from 'react-bootstrap';
-import { FiPlus, FiEdit2, FiTrash2, FiTag, FiPercent, FiShoppingBag, FiInfo } from 'react-icons/fi';
+import { FiPlus, FiEdit2, FiTrash2, FiInfo } from 'react-icons/fi';
 
 const logoColors = {
     primary: '#fe7e8b',

@@ -1,6 +1,6 @@
-﻿// components/ReplyModal.js
+// components/ReplyModal.js
 import React, { useState } from 'react';
-import { Modal, Button, Form, Alert, Spinner, Badge } from 'react-bootstrap';
+import { Modal, Button, Form, Alert, Spinner } from 'react-bootstrap';
 import { FiSend, FiCheck } from 'react-icons/fi';
 
 // Navbar color palette

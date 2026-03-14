@@ -574,7 +574,7 @@ const OrderManagement = () => {
       delivery: filtered.delivery.length,
       completed: filtered.completed.length,
     });
-  }, [timeFilter, orders]);
+  }, [filtered.all.length, filtered.completed.length, filtered.delivery.length]);
 
   /* Loading screen */
   if (authLoading) return (

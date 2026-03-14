@@ -38,7 +38,6 @@ const ADMIN_EMAIL = 'harisshabbir17@gmail.com';
 
 // AdminRoute - protects dashboard sub-pages, redirects non-admin to /404
 function AdminRoute({ children }) {
-  const navigate = useNavigate();
   const [status, setStatus] = useState('loading'); // 'loading' | 'allowed' | 'denied'
 
   useEffect(() => {

@@ -8,9 +8,7 @@ import {
   Card,
   Spinner,
   Alert,
-  Button,
-  Badge,
-  Stack
+  Badge
 } from 'react-bootstrap';
 import { FaShoppingCart, FaBoxOpen, FaCalendarAlt, FaStar } from 'react-icons/fa';
 import { CartContext } from '../components/CartContext';
@@ -96,11 +94,7 @@ const NewArrivals = () => {
     }
   };
 
-  const getProductImage = (product) => {
-    if (!product?.image?.[0]) return '/placeholder.jpg';
-    if (product.image[0].startsWith('http')) return product.image[0];
-    return `${process.env.REACT_APP_API_URL}${product.image[0]}`;
-  };
+
 
   return (
     <Container fluid className="new-arrivals-container py-4" style={{

@@ -1,4 +1,4 @@
-﻿import React from 'react';
+import React from 'react';
 import { Container, Row, Col } from 'react-bootstrap';
 import { FaFacebook, FaInstagram, FaTwitter, FaEnvelope, FaPhone, FaMapMarkerAlt } from 'react-icons/fa';
 import './heroSlider.css';

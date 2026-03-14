@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import axios from 'axios';
 import { Container, Row, Col, Card, Button, Modal, Form, Alert, Spinner } from 'react-bootstrap';
-import { FaPlus, FaEdit, FaTrash, FaBox, FaSearch, FaTimes, FaGift } from 'react-icons/fa';
+import { FaPlus, FaEdit, FaTrash, FaSearch, FaTimes, FaGift } from 'react-icons/fa';
 
 // Navbar color palette
 const logoColors = {
@@ -229,7 +229,6 @@ export default function BundleManagement() {
   
   const handleToggleActive = async (bundle) => {
     try {
-      const updatedBundle = { ...bundle, isActive: !bundle.isActive };
       await axios.put(`${process.env.REACT_APP_API_URL}/api/bundles/${bundle._id}`, {
         isActive: !bundle.isActive
       });

@@ -1,4 +1,4 @@
-﻿import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Container, Row, Col, Spinner, Accordion } from 'react-bootstrap';
 import axios from 'axios';
 import { FaQuestionCircle, FaChevronDown, FaChevronUp } from 'react-icons/fa';

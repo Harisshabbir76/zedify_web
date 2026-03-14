@@ -140,30 +140,30 @@ const CheckoutForm = ({ cart, cartTotal, clearCart, onOrderSuccess }) => {
 
   // Fetch automatic discounts
   useEffect(() => {
+    const fetchAutomaticDiscounts = async () => {
+      if (cart.length === 0) return;
+      try {
+        const res = await axios.post(`${process.env.REACT_APP_API_URL}/api/apply-coupon`, {
+          code: couponCode,
+          totalAmount: cartTotal,
+          products: cart.map(item => ({
+            productId: item._id || item.productId,
+            quantity: item.quantity,
+            price: item.discountedPrice || item.price,
+            category: item.category,
+            size: item.selectedSize,
+            color: item.selectedColor
+          }))
+        });
+        setDiscountAmount(res.data.discount);
+        setDiscountBreakdown(res.data.breakdown || []);
+      } catch (err) {
+        console.error('Error fetching automatic discounts:', err);
+      }
+    };
+
     fetchAutomaticDiscounts();
   }, [cart, cartTotal, couponCode]);
-
-  const fetchAutomaticDiscounts = async () => {
-    if (cart.length === 0) return;
-    try {
-      const res = await axios.post(`${process.env.REACT_APP_API_URL}/api/apply-coupon`, {
-        code: couponCode,
-        totalAmount: cartTotal,
-        products: cart.map(item => ({
-          productId: item._id || item.productId,
-          quantity: item.quantity,
-          price: item.discountedPrice || item.price,
-          category: item.category,
-          size: item.selectedSize,
-          color: item.selectedColor
-        }))
-      });
-      setDiscountAmount(res.data.discount);
-      setDiscountBreakdown(res.data.breakdown || []);
-    } catch (err) {
-      console.error('Error fetching automatic discounts:', err);
-    }
-  };
 
   const handleApplyCoupon = async () => {
     if (!couponCode.trim()) return;
@@ -1152,7 +1152,7 @@ const StripeElementsWrapper = ({ children, cart, cartTotal, clearCart, onOrderSu
 // Main CheckoutPage Component
 const CheckoutPage = () => {
   const location = useLocation();
-  const { cart: cartFromContext, cartCount: cartCountFromContext, cartTotal: cartTotalFromContext, clearCart } = useCart();
+  const { cart: cartFromContext, clearCart } = useCart();
   const navigate = useNavigate();
 
   // Check for single product checkout from Order Now

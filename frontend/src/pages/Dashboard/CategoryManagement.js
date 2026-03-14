@@ -1,4 +1,4 @@
-﻿import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { Container, Table, Button, Form, Modal, Card, Spinner, Alert, Image } from 'react-bootstrap';
 import { FiPlus, FiEdit2, FiTrash2, FiImage, FiUpload } from 'react-icons/fi';

@@ -1,4 +1,4 @@
-﻿import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import './heroSlider.css';
 
@@ -63,16 +63,16 @@ const HeroSlider = () => {
       goToNext();
     }, 5000);
     return () => clearInterval(interval);
-  }, [currentSlide, slides.length]);
+  }, [goToNext, slides.length]);
+
+  const goToNext = React.useCallback(() => {
+    if (slides.length === 0) return;
+    setCurrentSlide((prev) => (prev + 1) % slides.length);
+  }, [slides.length]);
 
   const goToPrev = () => {
     if (slides.length === 0) return;
     setCurrentSlide((prev) => (prev === 0 ? slides.length - 1 : prev - 1));
-  };
-
-  const goToNext = () => {
-    if (slides.length === 0) return;
-    setCurrentSlide((prev) => (prev + 1) % slides.length);
   };
 
   const handleSearch = (e) => {
