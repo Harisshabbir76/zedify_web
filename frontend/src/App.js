@@ -77,12 +77,67 @@ function ScrollToTop() {
   return null;
 }
 
+// DynamicTitle component - updates document title based on current route
+function DynamicTitle() {
+  const { pathname } = useLocation();
+
+  useEffect(() => {
+    const getTitle = () => {
+      // Base title
+      const base = "Zedify";
+      
+      // Exact matches
+      if (pathname === "/") return base;
+      if (pathname === "/login") return `Login | ${base}`;
+      if (pathname === "/signup") return `Signup | ${base}`;
+      if (pathname === "/cart") return `Your Cart | ${base}`;
+      if (pathname === "/checkout") return `Checkout | ${base}`;
+      if (pathname === "/catalog") return `Product Catalog | ${base}`;
+      if (pathname === "/category") return `Categories | ${base}`;
+      if (pathname === "/about-us") return `About Us | ${base}`;
+      if (pathname === "/contact-us") return `Contact Us | ${base}`;
+      if (pathname === "/new-arrivals") return `New Arrivals | ${base}`;
+      if (pathname === "/search") return `Search Results | ${base}`;
+      if (pathname === "/bundles") return `Exclusive Bundles | ${base}`;
+      if (pathname === "/forgot-password") return `Reset Password | ${base}`;
+
+      // Pattern matches
+      if (pathname.startsWith("/dashboard")) {
+        const subPage = pathname.split("/").pop();
+        if (subPage === "dashboard") return `Admin Dashboard | ${base}`;
+        const formattedSub = subPage.split("-").map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(" ");
+        return `${formattedSub} | Admin | ${base}`;
+      }
+
+      if (pathname.startsWith("/category/")) {
+        const catName = pathname.split("/")[2];
+        const formattedCat = decodeURIComponent(catName).split("-").map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(" ");
+        return `${formattedCat} | ${base}`;
+      }
+
+      if (pathname.includes("/catalog/")) {
+        // Try to get product name from URL if possible, or just default to Product
+        return `Product Details | ${base}`;
+      }
+
+      if (pathname === "/404") return `Page Not Found | ${base}`;
+
+      return base;
+    };
+
+    document.title = getTitle();
+  }, [pathname]);
+
+  return null;
+}
+
 function App() {
 
 
   return (
     <>
       <ScrollToTop />
+      <DynamicTitle />
       <Layout>
         <Routes>
           <Route path="/" element={<Home />} />
