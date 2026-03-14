@@ -9,20 +9,7 @@ const axios = require('axios');
 // Initialize Stripe with secret key
 const stripe = process.env.STRIPE_SECRET_KEY ? new Stripe(process.env.STRIPE_SECRET_KEY) : null;
 
-// Fetch PKR to USD exchange rate (free API, fallback rate ~278 PKR = 1 USD)
-async function fetchPKRtoUSDRate() {
-  try {
-    const response = await axios.get('https://api.exchangerate.host/convert?from=PKR&to=USD&amount=1', {
-      timeout: 5000
-    });
-    const rate = response.data.result || 0.0036;
-    console.log(`Exchange rate PKR→USD: 1 PKR = ${rate} USD`);
-    return rate;
-  } catch (error) {
-    console.warn('Exchange API failed, using fallback rate:', error.message);
-    return 0.0036; // Fallback ~278 PKR/USD
-  }
-}
+
 
 // Security: Validate cart totals on server side
 // This prevents clients from manipulating prices
@@ -195,31 +182,21 @@ router.post('/api/create-payment-intent', async (req, res) => {
     const { totalSavings, breakdown } = await calculateDiscounts(amount, validation.products, couponCode);
     const amountAfterDiscount = amount - totalSavings;
     
-    // Convert to Stripe USD cents if PKR
-    let stripeAmountCents;
-    let exchangeRateUsed = 1;
-    let originalCurrency = currency || 'usd';
-    
-    if (originalCurrency.toLowerCase() === 'pkr') {
-      exchangeRateUsed = await fetchPKRtoUSDRate();
-      const usdAmount = amountAfterDiscount * exchangeRateUsed;
-      stripeAmountCents = Math.round(usdAmount * 100); // USD cents
-    } else {
-      stripeAmountCents = Math.round(amountAfterDiscount * 100);
-    }
+    // Use the currency passed from frontend (defaulting to pkr for this store)
+    const stripeCurrency = (currency || 'pkr').toLowerCase();
+    const stripeAmount = Math.round(amountAfterDiscount);
 
-    // Create payment intent (always USD)
+    // Create payment intent
     const paymentIntent = await stripe.paymentIntents.create({
-      amount: stripeAmountCents,
-      currency: 'usd',
+      amount: stripeAmount,
+      currency: stripeCurrency,
       payment_method_types: ['card'],
       metadata: {
         couponCode: couponCode || '',
         discountAmount: totalSavings.toString(),
         originalAmount: amount.toString(),
-        originalCurrency: originalCurrency,
-        exchangeRateUsed: exchangeRateUsed.toString(),
-        usdAmount: (stripeAmountCents / 100).toString(),
+        currency: stripeCurrency,
+        finalAmount: (stripeAmount / 100).toString(),
         validatedProducts: JSON.stringify(validation.products.map(p => ({
           productId: p.productId,
           price: p.price,
@@ -230,11 +207,11 @@ router.post('/api/create-payment-intent', async (req, res) => {
 
     res.json({
       clientSecret: paymentIntent.client_secret,
-      amount: stripeAmountCents,
+      amount: stripeAmount,
+      currency: stripeCurrency,
       discount: totalSavings,
       breakdown,
-      exchangeRate: exchangeRateUsed,
-      usdAmount: stripeAmountCents / 100
+      finalAmount: stripeAmount / 100
     });
   } catch (error) {
     console.error('Error creating payment intent:', error);

@@ -644,45 +644,7 @@ const CheckoutForm = ({ cart, cartTotal, clearCart, onOrderSuccess }) => {
                   </div>
                 </div>
 
-                {/* Expiry and CVV Row */}
-                <Row>
-                  <Col md={6}>
-                    <Form.Group className="mb-3">
-                      <Form.Label style={{ color: '#4A5568', fontWeight: '500', fontSize: '0.9rem' }}>
-                        Expiry Date
-                      </Form.Label>
-                      <Form.Control
-                        type="text"
-                        placeholder="MM / YY"
-                        style={{
-                          borderRadius: '8px',
-                          borderColor: logoColors.light,
-                          padding: '0.6rem 1rem',
-                          backgroundColor: '#f9f9f9'
-                        }}
-                        disabled
-                      />
-                    </Form.Group>
-                  </Col>
-                  <Col md={6}>
-                    <Form.Group className="mb-3">
-                      <Form.Label style={{ color: '#4A5568', fontWeight: '500', fontSize: '0.9rem' }}>
-                        CVV
-                      </Form.Label>
-                      <Form.Control
-                        type="text"
-                        placeholder="123"
-                        style={{
-                          borderRadius: '8px',
-                          borderColor: logoColors.light,
-                          padding: '0.6rem 1rem',
-                          backgroundColor: '#f9f9f9'
-                        }}
-                        disabled
-                      />
-                    </Form.Group>
-                  </Col>
-                </Row>
+
 
                 {/* Card Icons Row */}
                 <div style={{
