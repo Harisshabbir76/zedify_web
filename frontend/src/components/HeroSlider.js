@@ -55,16 +55,6 @@ const HeroSlider = () => {
     fetchSlides();
   }, []);
 
-  // Auto-advance slides every 5 seconds
-  useEffect(() => {
-    if (slides.length === 0) return;
-
-    const interval = setInterval(() => {
-      goToNext();
-    }, 5000);
-    return () => clearInterval(interval);
-  }, [goToNext, slides.length]);
-
   const goToNext = React.useCallback(() => {
     if (slides.length === 0) return;
     setCurrentSlide((prev) => (prev + 1) % slides.length);
@@ -81,6 +71,16 @@ const HeroSlider = () => {
       window.location.href = `/search?query=${encodeURIComponent(searchQuery.trim())}`;
     }
   };
+
+  // Auto-advance slides every 5 seconds
+  useEffect(() => {
+    if (slides.length === 0) return;
+
+    const interval = setInterval(() => {
+      goToNext();
+    }, 5000);
+    return () => clearInterval(interval);
+  }, [goToNext, slides.length]);
 
   if (slides.length === 0) {
     return null; // Don't render slider if there are no slides 
