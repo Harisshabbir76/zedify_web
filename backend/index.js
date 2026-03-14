@@ -44,7 +44,10 @@ app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 app.use(express.json());
 
 const corsOptions = {
-  origin: ['http://localhost:3000'],
+  origin: ['http://localhost:3000',  
+            'https://zedify-web.vercel.app'
+    
+  ],
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization'],
   credentials: true,
@@ -69,7 +72,7 @@ app.use(whatsappRoutes);
 app.use(paymentRoutes);
 
 // MongoDB Connection
-const MONGO_URI = process.env.MONGO_URI || 'mongodb+srv://harrishere:Haris123@tododb.qyf9c.mongodb.net/clothingweb?retryWrites=true&w=majority&appName=Tododb';
+const MONGO_URI = process.env.MONGO_URI;
 
 mongoose.connect(MONGO_URI, {
   serverSelectionTimeoutMS: 5000,
