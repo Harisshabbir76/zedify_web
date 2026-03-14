@@ -484,7 +484,8 @@ const Navbar = () => {
           </Offcanvas.Header>
           <Offcanvas.Body style={{ padding: '1rem' }}>
             <Nav className="flex-column">
-              {navLinks.map((link) => (
+              {/* First three links - Home, New Arrivals, Catalog */}
+              {navLinks.slice(0, 3).map((link) => (
                 <Nav.Link
                   key={link.path}
                   as={Link}
@@ -523,7 +524,7 @@ const Navbar = () => {
                 </Nav.Link>
               ))}
 
-              {/* Mobile Categories */}
+              {/* Mobile Categories - After Catalog */}
               <div style={{ width: '100%' }}>
                 <div
                   onClick={handleMobileCategoryClick}
@@ -551,7 +552,7 @@ const Navbar = () => {
                   {mobileCategoriesOpen ? <FiChevronUp size={16} /> : <FiChevronDown size={16} />}
                 </div>
 
-                {/* Mobile Categories Dropdown */}
+                {/* Mobile Categories Dropdown - Shows all categories when clicked */}
                 {mobileCategoriesOpen && (
                   <div style={{
                     marginLeft: '2.5rem',
@@ -576,6 +577,7 @@ const Navbar = () => {
                     >
                       All Categories
                     </div>
+                    {/* Map through all categories */}
                     {categories.map(cat => (
                       <div
                         key={cat._id || cat.name}
@@ -598,6 +600,46 @@ const Navbar = () => {
                   </div>
                 )}
               </div>
+
+              {/* Remaining links after Categories - Bundles, About, Contact Us */}
+              {navLinks.slice(3).map((link) => (
+                <Nav.Link
+                  key={link.path}
+                  as={Link}
+                  to={link.path}
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    padding: '0.75rem 1rem',
+                    borderRadius: '0.5rem',
+                    fontWeight: 500,
+                    fontSize: '1rem',
+                    color: location.pathname === link.path ? navbarColors.primary : navbarColors.text,
+                    backgroundColor: location.pathname === link.path ? '#fff5f6' : 'transparent',
+                    marginBottom: '0.25rem',
+                    textDecoration: 'none',
+                    transition: 'all 0.2s ease'
+                  }}
+                  onClick={() => setShowSidebar(false)}
+                  onMouseEnter={(e) => {
+                    if (location.pathname !== link.path) {
+                      e.currentTarget.style.backgroundColor = '#F9F9F9';
+                      e.currentTarget.style.color = navbarColors.primary;
+                    }
+                  }}
+                  onMouseLeave={(e) => {
+                    if (location.pathname !== link.path) {
+                      e.currentTarget.style.backgroundColor = 'transparent';
+                      e.currentTarget.style.color = navbarColors.text;
+                    }
+                  }}
+                >
+                  <span className="me-3" style={{ color: location.pathname === link.path ? navbarColors.primary : '#9CA3AF' }}>
+                    {link.icon}
+                  </span>
+                  {link.name}
+                </Nav.Link>
+              ))}
 
               <div className="mt-3 pt-2 border-top" style={{ borderColor: navbarColors.border }}>
                 <Nav.Link

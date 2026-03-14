@@ -710,17 +710,7 @@ const CheckoutForm = ({ cart, cartTotal, clearCart, onOrderSuccess }) => {
             </div>
           )}
 
-          {formData.paymentMethod === 'cashOnDelivery' && (
-            <Alert variant="info" style={{
-              borderRadius: '8px',
-              background: logoColors.softGradient,
-              border: `1px solid ${logoColors.light}`,
-              color: logoColors.dark,
-              fontSize: '0.9rem'
-            }}>
-              Pay with cash upon delivery. No additional charges.
-            </Alert>
-          )}
+          
         </Card.Body>
       </Card>
 
