@@ -26,8 +26,10 @@ const ProductEditModal = ({ show, product, onClose, onSave }) => {
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+  const [imageUploading, setImageUploading] = useState(false);
   const [newImages, setNewImages] = useState([]);
   const [isDragging, setIsDragging] = useState(false);
+  const [imagePreview, setImagePreview] = useState(null);
 
   useEffect(() => {
     if (product) {
