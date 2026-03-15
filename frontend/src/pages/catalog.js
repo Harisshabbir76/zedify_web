@@ -342,7 +342,7 @@ export default function Catalog() {
             {/* Mobile view - show 2 products per row */}
             <div className="d-block d-md-none">
               <Row xs={2} className="g-3">
-                {filteredProducts.slice(0, 4).map(product => renderProductCard(product))}
+                {filteredProducts.map(product => renderProductCard(product))}
               </Row>
             </div>
 

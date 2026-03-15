@@ -721,10 +721,11 @@ const CheckoutForm = ({ cart, cartTotal, clearCart, onOrderSuccess }) => {
       )}
 
       {/* Action Buttons */}
-      <div className="d-flex justify-content-between align-items-center">
+      <div className="d-flex flex-column flex-md-row justify-content-between align-items-center gap-3">
         <Button
           variant="outline-secondary"
           onClick={() => navigate('/cart')}
+          className="order-2 order-md-1 w-100 w-md-auto"
           style={{
             borderColor: logoColors.light,
             color: logoColors.dark,
@@ -748,6 +749,7 @@ const CheckoutForm = ({ cart, cartTotal, clearCart, onOrderSuccess }) => {
         <Button
           type="button"
           variant="primary"
+          className="order-1 order-md-2 w-100 w-md-auto"
           disabled={isSubmitting || processing || (formData.paymentMethod === 'creditCard' && !stripe)}
           onClick={formData.paymentMethod === 'creditCard' ? handlePayment : handleCODSubmit}
           style={{

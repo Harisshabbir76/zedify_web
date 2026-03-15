@@ -143,15 +143,58 @@ const Navbar = () => {
             />
           </BootstrapNavbar.Brand>
 
-          {/* Mobile menu button */}
-          <div className="d-flex align-items-center d-lg-none">
+          {/* Mobile menu and cart button */}
+          <div className="d-flex align-items-center d-lg-none gap-2">
+            {/* Mobile Cart Icon */}
+            <Button
+              variant="link"
+              className="p-2 position-relative"
+              as={Link}
+              to="/cart"
+              style={{
+                color: 'white',
+                backgroundColor: 'rgba(255, 255, 255, 0.2)',
+                borderRadius: '0.5rem',
+                width: '36px',
+                height: '36px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                border: 'none'
+              }}
+            >
+              <FiShoppingBag size={20} />
+              {cartCount > 0 && (
+                <Badge
+                  pill
+                  style={{
+                    position: 'absolute',
+                    top: '-0.25rem',
+                    right: '-0.25rem',
+                    fontSize: '0.6rem',
+                    height: '1.1rem',
+                    width: '1.1rem',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    background: 'white',
+                    color: navbarColors.primary,
+                    border: '2px solid white',
+                    fontWeight: 'bold'
+                  }}
+                >
+                  {cartCount}
+                </Badge>
+              )}
+            </Button>
+
             <Button
               variant="link"
               className="p-2"
               onClick={() => setShowSidebar(true)}
               style={{
-                color: navbarColors.text,
-                backgroundColor: '#F5F5F5',
+                color: 'white',
+                backgroundColor: 'rgba(255, 255, 255, 0.2)',
                 borderRadius: '0.5rem',
                 width: '36px',
                 height: '36px',
@@ -177,7 +220,7 @@ const Navbar = () => {
                   style={{
                     margin: '0 0.15rem',
                     borderRadius: '2rem',
-                    color: location.pathname === link.path ? navbarColors.primary : navbarColors.text,
+                    color: location.pathname === link.path ? navbarColors.primary : 'white',
                     fontWeight: 500,
                     fontSize: '0.9rem',
                     padding: '0.5rem 0.8rem',
@@ -193,7 +236,7 @@ const Navbar = () => {
                   }}
                   onMouseLeave={(e) => {
                     if (location.pathname !== link.path) {
-                      e.target.style.color = navbarColors.text;
+                      e.target.style.color = 'white';
                       e.target.style.backgroundColor = 'transparent';
                     }
                   }}
@@ -216,7 +259,7 @@ const Navbar = () => {
                     fontSize: '0.9rem',
                     border: 'none',
                     outline: 'none',
-                    color: navbarColors.text,
+                    color: 'white',
                     padding: '0.5rem 0.8rem',
                     backgroundColor: 'transparent',
                     fontFamily: 'inherit',
@@ -234,7 +277,7 @@ const Navbar = () => {
                     e.currentTarget.style.backgroundColor = '#fff5f6';
                   }}
                   onMouseLeave={(e) => {
-                    e.currentTarget.style.color = navbarColors.text;
+                    e.currentTarget.style.color = 'white';
                     e.currentTarget.style.backgroundColor = 'transparent';
                   }}
                 >
@@ -314,7 +357,7 @@ const Navbar = () => {
                   style={{
                     margin: '0 0.15rem',
                     borderRadius: '2rem',
-                    color: location.pathname === link.path ? navbarColors.primary : navbarColors.text,
+                    color: location.pathname === link.path ? navbarColors.primary : 'white',
                     fontWeight: 500,
                     fontSize: '0.9rem',
                     padding: '0.5rem 0.8rem',
@@ -330,7 +373,7 @@ const Navbar = () => {
                   }}
                   onMouseLeave={(e) => {
                     if (location.pathname !== link.path) {
-                      e.target.style.color = navbarColors.text;
+                      e.target.style.color = 'white';
                       e.target.style.backgroundColor = 'transparent';
                     }
                   }}

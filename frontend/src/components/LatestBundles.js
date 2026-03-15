@@ -106,9 +106,10 @@ export default function LatestBundles() {
                     </p>
                 </div>
 
-                <Row className="g-4">
-                    {bundles.map(bundle => (
-                        <Col key={bundle._id} xs={12} sm={6} md={4} lg={3} className="mb-4">
+                <div className="product-scroll-container">
+                    <Row className="flex-nowrap flex-md-wrap g-3 pb-3 pb-md-0" style={{ overflowX: 'auto', WebkitOverflowScrolling: 'touch' }}>
+                        {bundles.map(bundle => (
+                            <Col key={bundle._id} xs={9} sm={6} md={4} lg={3} className="mb-4 flex-shrink-0 flex-md-shrink-1">
                             <Card
                                 className="product-card h-100 border-0"
 
@@ -310,7 +311,30 @@ export default function LatestBundles() {
                             </Card>
                         </Col>
                     ))}
-                </Row>
+                    </Row>
+                </div>
+                <style>{`
+                    @media (max-width: 768px) {
+                        .product-scroll-container {
+                            margin-right: -15px;
+                            margin-left: -15px;
+                            padding-right: 15px;
+                            padding-left: 15px;
+                        }
+                        .product-scroll-container .row::-webkit-scrollbar {
+                            display: none;
+                        }
+                        .product-scroll-container .row {
+                            -ms-overflow-style: none;
+                            scrollbar-width: none;
+                        }
+                    }
+                    @media (min-width: 769px) {
+                        .product-scroll-container .row {
+                            overflow-x: visible !important;
+                        }
+                    }
+                `}</style>
 
                 {bundles.length > 0 && (
                     <div className="text-center mt-4">

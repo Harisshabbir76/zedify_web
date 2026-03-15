@@ -128,103 +128,66 @@ const HeroSlider = () => {
             style={{
               position: 'absolute',
               top: '50%',
-              left: '10%',
-              transform: 'translateY(-50%)',
+              left: window.innerWidth <= 768 ? '50%' : '10%',
+              transform: window.innerWidth <= 768 ? 'translate(-50%, -50%)' : 'translateY(-50%)',
               display: 'flex',
               flexDirection: 'column',
-              alignItems: 'flex-start',
+              alignItems: window.innerWidth <= 768 ? 'center' : 'flex-start',
               width: '90%',
               maxWidth: '700px',
               color: 'white',
               textShadow: '2px 2px 4px rgba(0,0,0,0.3)',
-              zIndex: 2
+              zIndex: 2,
+              textAlign: window.innerWidth <= 768 ? 'center' : 'left'
             }}
           >
-            {/* Main Title - Dynamic sizing */}
+            {/* Main Title - Increased size and made bolder */}
             <h1 style={{
-              fontSize: 'clamp(2rem, 5vw, 4rem)',
-              fontWeight: '700',
+              fontSize: 'clamp(4rem, 9vw, 7rem)',
+              fontWeight: '900',
               marginBottom: '1rem',
-              lineHeight: '1.2',
+              lineHeight: '1.1',
               color: 'white',
               width: '100%',
               wordWrap: 'break-word',
-              textAlign: 'left'
+              textAlign: 'inherit',
+              textTransform: 'uppercase',
+              letterSpacing: '2px'
             }}>
               {slide.mainTitle}
             </h1>
 
             {/* Subtitle - Dynamic sizing */}
             <p style={{
-              fontSize: 'clamp(1rem, 2.5vw, 1.5rem)',
+              fontSize: 'clamp(1.2rem, 3vw, 1.8rem)',
               marginBottom: '0.75rem',
               color: 'rgba(255,255,255,0.95)',
               lineHeight: '1.4',
               width: '100%',
               wordWrap: 'break-word',
-              textAlign: 'left'
+              textAlign: 'inherit'
             }}>
               {slide.subtitle}
             </p>
 
             {/* Description - Dynamic sizing */}
             <p style={{
-              fontSize: 'clamp(0.9rem, 2vw, 1.2rem)',
+              fontSize: 'clamp(1.1rem, 2.5vw, 1.4rem)',
               marginBottom: '2rem',
-              color: 'rgba(255,255,255,0.9)',
+              color: 'rgba(255,255,255,0.95)',
               lineHeight: '1.6',
               width: '100%',
               wordWrap: 'break-word',
-              textAlign: 'left'
+              textAlign: 'inherit'
             }}>
               {slide.description}
             </p>
 
-            {/* Shop Now button - Left aligned */}
+            {/* Search Bar - Moved UP */}
             <div style={{
-              display: 'flex',
-              justifyContent: 'flex-start',
+              marginBottom: '1.5rem',
               width: '100%',
-              marginBottom: 'clamp(1.5rem, 3vh, 2.5rem)'
-            }}>
-              <a
-                href={slide.ctaLink}
-                className="slide-shop-btn"
-                style={{
-                  background: logoColors.gradient,
-                  color: 'white',
-                  border: 'none',
-                  padding: 'clamp(0.5rem, 2vw, 0.8rem) clamp(1.5rem, 4vw, 2.5rem)',
-                  borderRadius: '50px',
-                  fontWeight: '600',
-                  fontSize: 'clamp(0.9rem, 2vw, 1.1rem)',
-                  textDecoration: 'none',
-                  transition: 'all 0.3s ease',
-                  boxShadow: `0 4px 15px ${logoColors.primary}40`,
-                  display: 'inline-block',
-                  textAlign: 'center',
-                  minWidth: 'clamp(120px, 20vw, 160px)'
-                }}
-                onMouseEnter={(e) => {
-                  e.target.style.opacity = '0.9';
-                  e.target.style.transform = 'translateY(-2px)';
-                  e.target.style.boxShadow = `0 6px 20px ${logoColors.primary}60`;
-                }}
-                onMouseLeave={(e) => {
-                  e.target.style.opacity = '1';
-                  e.target.style.transform = 'translateY(0)';
-                  e.target.style.boxShadow = `0 4px 15px ${logoColors.primary}40`;
-                }}
-              >
-                {slide.ctaText}
-              </a>
-            </div>
-
-            {/* Search Bar - Left aligned */}
-            <div style={{
-              marginBottom: 'clamp(1rem, 2vh, 1.5rem)',
-              width: '100%',
-              maxWidth: 'min(500px, 90%)'
+              maxWidth: 'min(500px, 100%)'
             }}>
               <form
                 onSubmit={handleSearch}
@@ -279,15 +242,56 @@ const HeroSlider = () => {
               </form>
             </div>
 
-            {/* Sign Up Link - Left aligned */}
+            {/* Shop Now button - Moved BELOW Search */}
+            <div style={{
+              display: 'flex',
+              justifyContent: window.innerWidth <= 768 ? 'center' : 'flex-start',
+              width: '100%',
+              marginBottom: 'clamp(1.5rem, 3vh, 2.5rem)'
+            }}>
+              <a
+                href={slide.ctaLink}
+                className="slide-shop-btn"
+                style={{
+                  background: logoColors.gradient,
+                  color: 'white',
+                  border: 'none',
+                  padding: 'clamp(0.6rem, 2.5vw, 1rem) clamp(2rem, 5vw, 3.5rem)',
+                  borderRadius: '50px',
+                  fontWeight: '700',
+                  fontSize: 'clamp(1rem, 2.5vw, 1.2rem)',
+                  textDecoration: 'none',
+                  transition: 'all 0.3s ease',
+                  boxShadow: `0 4px 15px ${logoColors.primary}40`,
+                  display: 'inline-block',
+                  textAlign: 'center',
+                  minWidth: 'clamp(140px, 25vw, 200px)'
+                }}
+                onMouseEnter={(e) => {
+                  e.target.style.opacity = '0.9';
+                  e.target.style.transform = 'translateY(-2px)';
+                  e.target.style.boxShadow = `0 6px 20px ${logoColors.primary}60`;
+                }}
+                onMouseLeave={(e) => {
+                  e.target.style.opacity = '1';
+                  e.target.style.transform = 'translateY(0)';
+                  e.target.style.boxShadow = `0 4px 15px ${logoColors.primary}40`;
+                }}
+              >
+                {slide.ctaText}
+              </a>
+            </div>
+
+            {/* Sign Up Link */}
             <div style={{
               display: 'flex',
               alignItems: 'center',
-              justifyContent: 'flex-start',
+              justifyContent: window.innerWidth <= 768 ? 'center' : 'flex-start',
               gap: '0.5rem',
-              fontSize: 'clamp(0.85rem, 2vw, 1rem)',
+              fontSize: 'clamp(0.9rem, 2.5vw, 1.1rem)',
               marginTop: '0.5rem',
-              flexWrap: 'wrap'
+              flexWrap: 'wrap',
+              width: '100%'
             }}>
               <span style={{ color: 'rgba(255,255,255,0.9)' }}>Not yet Member?</span>
               <a
@@ -295,7 +299,7 @@ const HeroSlider = () => {
                 style={{
                   color: 'white',
                   textDecoration: 'underline',
-                  fontWeight: '600',
+                  fontWeight: '700',
                   transition: 'color 0.3s ease'
                 }}
                 onMouseEnter={(e) => e.target.style.color = logoColors.primary}

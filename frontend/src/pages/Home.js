@@ -26,7 +26,7 @@ export default function Home() {
 
   useEffect(() => {
     const checkScreenSize = () => {
-      setIsMobile(window.innerWidth <= 320);
+      setIsMobile(window.innerWidth <= 768);
     };
     checkScreenSize();
     window.addEventListener('resize', checkScreenSize);
@@ -92,7 +92,7 @@ export default function Home() {
     <div style={{ background: logoColors.background }}> {/* Consistent base background */}
       {/* Hero Section */}
       <div style={heroStyle}>
-        {!isMobile && <HeroSlider />}
+        <HeroSlider />
         {isMobile && (
           <div style={{ padding: '2rem', textAlign: 'center' }}>
             <h2 style={{ color: '#2D3748' }}>Welcome to Zedify</h2>
