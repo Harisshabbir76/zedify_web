@@ -4,13 +4,13 @@ import './heroSlider.css';
 
 // Navbar color palette
 const logoColors = {
-  primary: '#fe7e8b', // Navbar primary color
-  secondary: '#e65c70', // Navbar secondary color
-  light: '#ffd1d4', // Navbar light color
-  dark: '#d64555', // Navbar dark color
-  background: '#fff5f6', // Super light - almost white
-  gradient: 'linear-gradient(135deg, #fe7e8b 0%, #e65c70 100%)', // Navbar gradient
-  softGradient: 'linear-gradient(135deg, #fff5f6 0%, #ffd1d4 100%)', // Very soft gradient
+  primary: '#fe7e8b',
+  secondary: '#e65c70',
+  light: '#ffd1d4',
+  dark: '#d64555',
+  background: '#fff5f6',
+  gradient: 'linear-gradient(135deg, #fe7e8b 0%, #e65c70 100%)',
+  softGradient: 'linear-gradient(135deg, #fff5f6 0%, #ffd1d4 100%)',
 };
 
 const HeroSlider = () => {
@@ -87,7 +87,13 @@ const HeroSlider = () => {
   }
 
   return (
-    <div className="hero-slider" style={{ background: logoColors.background }}>
+    <div className="hero-slider" style={{ 
+      background: logoColors.background, 
+      marginTop: '0 !important', 
+      paddingTop: '0 !important',
+      position: 'relative',
+      top: 0
+    }}>
       {/* Previous arrow button */}
       <button
         className="slider-arrow prev-arrow"

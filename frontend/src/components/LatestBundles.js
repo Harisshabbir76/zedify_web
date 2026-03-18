@@ -1,10 +1,9 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import { Container, Row, Col, Card, Spinner, Alert } from 'react-bootstrap';
-import { FaShoppingCart } from 'react-icons/fa';
+import { FaShoppingCart, FaArrowLeft, FaArrowRight } from 'react-icons/fa';
 import { useCart } from './CartContext';
 import { useNavigate } from 'react-router-dom';
-
 
 // Navbar color palette
 const logoColors = {
@@ -19,6 +18,8 @@ export default function LatestBundles() {
     const [bundles, setBundles] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
+    const [currentPage, setCurrentPage] = useState(0);
+    const itemsPerPage = 4;
     const { addToCart } = useCart();
     const navigate = useNavigate();
 
@@ -39,6 +40,24 @@ export default function LatestBundles() {
         fetchLatestBundles();
     }, []);
 
+    // Calculate total pages
+    const totalPages = Math.ceil(bundles.length / itemsPerPage);
+    const startIndex = currentPage * itemsPerPage;
+    const visibleBundles = bundles.slice(startIndex, startIndex + itemsPerPage);
+
+    // Navigation handlers
+    const goToNextPage = () => {
+        if (currentPage < totalPages - 1) {
+            setCurrentPage(currentPage + 1);
+        }
+    };
+
+    const goToPrevPage = () => {
+        if (currentPage > 0) {
+            setCurrentPage(currentPage - 1);
+        }
+    };
+
     const handleBundleClick = (bundleId) => {
         navigate(`/bundles`);
     };
@@ -47,19 +66,37 @@ export default function LatestBundles() {
         e.stopPropagation();
         // Add bundle as single cart item using bundlePrice
         const bundleItem = {
-          ...bundle,
-          _id: `bundle_${bundle._id}`,
-          isBundle: true,
-          quantity: 1,
-          price: bundle.bundlePrice,
-          discountedPrice: bundle.bundlePrice,
-          name: bundle.name,
-          bundleProducts: bundle.products,
-          image: bundle.image ? [bundle.image] : bundle.products[0]?.image || []
+            ...bundle,
+            _id: `bundle_${bundle._id}`,
+            isBundle: true,
+            quantity: 1,
+            price: bundle.bundlePrice,
+            discountedPrice: bundle.bundlePrice,
+            name: bundle.name,
+            bundleProducts: bundle.products,
+            image: bundle.image ? [bundle.image] : bundle.products[0]?.image || []
         };
         addToCart(bundleItem);
     };
 
+    const handleBuyNow = (e, bundle) => {
+        e.stopPropagation();
+        navigate('/checkout', {
+            state: {
+                products: [{
+                    ...bundle,
+                    _id: `bundle_${bundle._id}`,
+                    isBundle: true,
+                    quantity: 1,
+                    price: bundle.bundlePrice,
+                    discountedPrice: bundle.bundlePrice,
+                    name: bundle.name,
+                    bundleProducts: bundle.products,
+                    image: bundle.image ? [bundle.image] : bundle.products[0]?.image || []
+                }]
+            }
+        });
+    };
 
     const getProductImage = (product) => {
         if (!product?.image?.[0]) return '/placeholder.jpg';
@@ -106,74 +143,126 @@ export default function LatestBundles() {
                     </p>
                 </div>
 
-                <div className="product-scroll-container">
-                    <Row className="flex-nowrap flex-md-wrap g-3 pb-3 pb-md-0" style={{ overflowX: 'auto', WebkitOverflowScrolling: 'touch' }}>
-                        {bundles.map(bundle => (
-                            <Col key={bundle._id} xs={9} sm={6} md={4} lg={3} className="mb-4 flex-shrink-0 flex-md-shrink-1">
-                            <Card
-                                className="product-card h-100 border-0"
+                {/* Bundles Grid */}
+                <div style={{ position: 'relative', padding: '0 50px' }}>
+                    {/* Previous Button */}
+                    {totalPages > 1 && currentPage > 0 && (
+                        <button
+                            onClick={goToPrevPage}
+                            style={{
+                                position: 'absolute',
+                                left: '0',
+                                top: '50%',
+                                transform: 'translateY(-50%)',
+                                zIndex: 10,
+                                background: 'white',
+                                border: `2px solid ${logoColors.primary}`,
+                                color: logoColors.primary,
+                                width: '40px',
+                                height: '40px',
+                                borderRadius: '50%',
+                                fontSize: '18px',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                cursor: 'pointer',
+                                transition: 'all 0.3s ease',
+                                boxShadow: `0 4px 12px ${logoColors.primary}30`
+                            }}
+                            onMouseEnter={(e) => {
+                                e.currentTarget.style.background = logoColors.primary;
+                                e.currentTarget.style.color = 'white';
+                                e.currentTarget.style.transform = 'translateY(-50%) scale(1.1)';
+                            }}
+                            onMouseLeave={(e) => {
+                                e.currentTarget.style.background = 'white';
+                                e.currentTarget.style.color = logoColors.primary;
+                                e.currentTarget.style.transform = 'translateY(-50%) scale(1)';
+                            }}
+                        >
+                            <FaArrowLeft />
+                        </button>
+                    )}
 
-                                onClick={() => {
-                                  handleBundleClick(bundle._id);
-                                  // Order Now - pass bundle to checkout
-                                  navigate('/checkout', {
-                                    state: {
-                                        products: [{
-                                          ...bundle,
-                                          _id: `bundle_${bundle._id}`,
-                                          isBundle: true,
-                                          quantity: 1,
-                                          price: bundle.bundlePrice,
-                                          discountedPrice: bundle.bundlePrice,
-                                          name: bundle.name,
-                                          bundleProducts: bundle.products,
-                                          image: bundle.image ? [bundle.image] : bundle.products[0]?.image || []
-                                        }]
-                                    }
-                                  });
-                                }}
+                    {/* Next Button */}
+                    {totalPages > 1 && currentPage < totalPages - 1 && (
+                        <button
+                            onClick={goToNextPage}
+                            style={{
+                                position: 'absolute',
+                                right: '0',
+                                top: '50%',
+                                transform: 'translateY(-50%)',
+                                zIndex: 10,
+                                background: 'white',
+                                border: `2px solid ${logoColors.primary}`,
+                                color: logoColors.primary,
+                                width: '40px',
+                                height: '40px',
+                                borderRadius: '50%',
+                                fontSize: '18px',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                cursor: 'pointer',
+                                transition: 'all 0.3s ease',
+                                boxShadow: `0 4px 12px ${logoColors.primary}30`
+                            }}
+                            onMouseEnter={(e) => {
+                                e.currentTarget.style.background = logoColors.primary;
+                                e.currentTarget.style.color = 'white';
+                                e.currentTarget.style.transform = 'translateY(-50%) scale(1.1)';
+                            }}
+                            onMouseLeave={(e) => {
+                                e.currentTarget.style.background = 'white';
+                                e.currentTarget.style.color = logoColors.primary;
+                                e.currentTarget.style.transform = 'translateY(-50%) scale(1)';
+                            }}
+                        >
+                            <FaArrowRight />
+                        </button>
+                    )}
 
-                                style={{
-                                    background: 'white',
-                                    borderRadius: '12px',
-                                    overflow: 'hidden',
-                                    transition: 'all 0.3s ease',
-                                    boxShadow: '0 4px 12px rgba(0,0,0,0.05)',
-                                    cursor: 'pointer'
-                                }}
-                                onMouseEnter={(e) => {
-                                    e.currentTarget.style.transform = 'translateY(-5px)';
-                                    e.currentTarget.style.boxShadow = `0 8px 20px ${logoColors.primary}30`;
-                                }}
-                                onMouseLeave={(e) => {
-                                    e.currentTarget.style.transform = 'translateY(0)';
-                                    e.currentTarget.style.boxShadow = '0 4px 12px rgba(0,0,0,0.05)';
-                                }}
-                            >
-                                <div className="position-relative">
-                                    <div style={{
-                                        height: '180px',
-                                        display: 'flex',
-                                        padding: '0.5rem',
-                                        gap: '0.25rem',
-                                        overflow: 'hidden'
-                                    }}>
-                                        {bundle.image ? (
-                                            <div style={{ flex: 1, borderRadius: '8px', overflow: 'hidden' }}>
-                                                <img 
-                                                    src={bundle.image.startsWith('http') ? bundle.image : `${process.env.REACT_APP_API_URL}${bundle.image.startsWith('/') ? '' : '/'}${bundle.image}`}
-                                                    alt={bundle.name}
-                                                    style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-                                                />
-                                            </div>
-                                        ) : (
-                                            bundle.products?.slice(0, 4).map((product, idx) => (
+                    {/* Bundles Grid */}
+                    <Row xs={1} sm={2} md={3} lg={4} className="g-4">
+                        {visibleBundles.map((bundle) => (
+                            <Col key={bundle._id}>
+                                <Card
+                                    className="product-card h-100 border-0"
+                                    onClick={() => handleBundleClick(bundle._id)}
+                                    style={{
+                                        background: 'white',
+                                        borderRadius: '12px',
+                                        overflow: 'hidden',
+                                        transition: 'all 0.3s ease',
+                                        boxShadow: '0 4px 12px rgba(0,0,0,0.05)',
+                                        cursor: 'pointer',
+                                        height: '100%'
+                                    }}
+                                    onMouseEnter={(e) => {
+                                        e.currentTarget.style.transform = 'translateY(-5px)';
+                                        e.currentTarget.style.boxShadow = `0 8px 20px ${logoColors.primary}30`;
+                                    }}
+                                    onMouseLeave={(e) => {
+                                        e.currentTarget.style.transform = 'translateY(0)';
+                                        e.currentTarget.style.boxShadow = '0 4px 12px rgba(0,0,0,0.05)';
+                                    }}
+                                >
+                                    <div className="product-image-container" style={{ position: 'relative' }}>
+                                        {/* Product Images Collage */}
+                                        <div style={{
+                                            height: '180px',
+                                            display: 'flex',
+                                            padding: '0.5rem',
+                                            gap: '2px',
+                                            backgroundColor: '#f8f9fa'
+                                        }}>
+                                            {bundle.products?.slice(0, 4).map((product, idx) => (
                                                 <div
                                                     key={idx}
                                                     style={{
                                                         flex: 1,
-                                                        borderRadius: '8px',
-                                                        overflow: 'hidden'
+                                                        overflow: 'hidden',
                                                     }}
                                                 >
                                                     <img
@@ -182,160 +271,179 @@ export default function LatestBundles() {
                                                         style={{
                                                             width: '100%',
                                                             height: '100%',
-                                                            objectFit: 'cover'
+                                                            objectFit: 'cover',
+                                                        }}
+                                                        onError={(e) => {
+                                                            e.target.src = '/placeholder.jpg';
                                                         }}
                                                     />
                                                 </div>
-                                            ))
+                                            ))}
+                                        </div>
+
+                                        {/* Discount Badge */}
+                                        {bundle.originalPrice > bundle.bundlePrice && (
+                                            <div style={{
+                                                position: 'absolute',
+                                                top: '10px',
+                                                left: '10px',
+                                                background: logoColors.gradient,
+                                                color: 'white',
+                                                padding: '4px 8px',
+                                                borderRadius: '4px',
+                                                fontSize: '0.7rem',
+                                                fontWeight: 'bold',
+                                                zIndex: 1
+                                            }}>
+                                                {Math.round(100 - (bundle.bundlePrice / bundle.originalPrice) * 100)}% OFF
+                                            </div>
                                         )}
-                                    </div>
-                                    {bundle.originalPrice > bundle.bundlePrice && (
+
+                                        {/* Bundle Badge */}
                                         <div style={{
                                             position: 'absolute',
                                             top: '10px',
-                                            left: '10px',
-                                            background: logoColors.gradient,
+                                            right: '10px',
+                                            background: logoColors.primary,
                                             color: 'white',
                                             padding: '4px 8px',
                                             borderRadius: '4px',
-                                            fontSize: '0.75rem',
+                                            fontSize: '0.7rem',
                                             fontWeight: 'bold',
                                             zIndex: 1
                                         }}>
-                                            {Math.round(100 - (bundle.bundlePrice / bundle.originalPrice) * 100)}% OFF
+                                            Bundle
                                         </div>
-                                    )}
-                                </div>
-                                <Card.Body className="d-flex flex-column" style={{ padding: '1rem' }}>
-                                    <Card.Title className="mb-2" style={{
-                                        fontSize: '1rem',
-                                        fontWeight: '600',
-                                        color: '#2D3748',
-                                        marginBottom: '0.25rem'
-                                    }}>
-                                        {bundle.name}
-                                    </Card.Title>
-                                    <Card.Text className="text-muted" style={{
-                                        fontSize: '0.8rem',
-                                        marginBottom: '0.5rem'
-                                    }}>
-                                        {bundle.products?.length} products
-                                    </Card.Text>
-                                    <div className="mt-auto">
-                                        <div className="d-flex justify-content-between align-items-center mb-2">
-                                            <div className="price">
-                                                {bundle.originalPrice > bundle.bundlePrice && (
-                                                    <span className="original-price text-muted text-decoration-line-through me-2" style={{ fontSize: '0.8rem' }}>
-                                                        Rs. {bundle.originalPrice?.toLocaleString()}
+                                    </div>
+
+                                    <Card.Body className="d-flex flex-column" style={{ padding: '1rem' }}>
+                                        <Card.Title style={{
+                                            fontSize: '1rem',
+                                            fontWeight: '600',
+                                            color: '#2D3748',
+                                            marginBottom: '0.25rem'
+                                        }}>
+                                            {bundle.name}
+                                        </Card.Title>
+
+                                        <div className="d-flex flex-wrap gap-1 mb-2">
+                                            <span style={{
+                                                background: logoColors.softGradient,
+                                                padding: '2px 6px',
+                                                borderRadius: '4px',
+                                                fontSize: '0.65rem',
+                                                color: logoColors.primary
+                                            }}>
+                                                {bundle.products?.length || 0} Products
+                                            </span>
+                                        </div>
+
+                                        <div className="mt-auto">
+                                            <div className="d-flex justify-content-between align-items-center mb-2">
+                                                <div className="price">
+                                                    {bundle.originalPrice > bundle.bundlePrice && (
+                                                        <span className="original-price text-muted text-decoration-line-through me-2" style={{ fontSize: '0.75rem' }}>
+                                                            Rs. {bundle.originalPrice?.toLocaleString()}
+                                                        </span>
+                                                    )}
+                                                    <span className="current-price fw-bold" style={{ color: logoColors.primary, fontSize: '1rem' }}>
+                                                        Rs. {bundle.bundlePrice?.toLocaleString()}
                                                     </span>
-                                                )}
-                                                <span className="current-price fw-bold" style={{ color: logoColors.primary, fontSize: '1.1rem' }}>
-                                                    Rs. {bundle.bundlePrice?.toLocaleString()}
-                                                </span>
+                                                </div>
+                                            </div>
+
+                                            <div className="d-flex gap-2">
+                                                <button
+                                                    onClick={(e) => handleAddBundleToCart(e, bundle)}
+                                                    className="btn w-50"
+                                                    style={{
+                                                        background: 'white',
+                                                        border: `1px solid ${logoColors.primary}`,
+                                                        color: logoColors.primary,
+                                                        padding: '0.4rem',
+                                                        borderRadius: '6px',
+                                                        fontSize: '0.75rem',
+                                                        fontWeight: '500',
+                                                        cursor: 'pointer',
+                                                        transition: 'all 0.3s ease'
+                                                    }}
+                                                    onMouseEnter={(e) => {
+                                                        e.target.style.background = logoColors.primary;
+                                                        e.target.style.color = 'white';
+                                                    }}
+                                                    onMouseLeave={(e) => {
+                                                        e.target.style.background = 'white';
+                                                        e.target.style.color = logoColors.primary;
+                                                    }}
+                                                >
+                                                    <FaShoppingCart className="me-1" size={10} />
+                                                    Cart
+                                                </button>
+                                                <button
+                                                    onClick={(e) => handleBuyNow(e, bundle)}
+                                                    className="btn w-50"
+                                                    style={{
+                                                        background: logoColors.gradient,
+                                                        color: 'white',
+                                                        border: 'none',
+                                                        padding: '0.4rem',
+                                                        borderRadius: '6px',
+                                                        fontSize: '0.75rem',
+                                                        fontWeight: '500',
+                                                        cursor: 'pointer',
+                                                        transition: 'all 0.3s ease'
+                                                    }}
+                                                    onMouseEnter={(e) => {
+                                                        e.target.style.opacity = '0.9';
+                                                        e.target.style.transform = 'translateY(-1px)';
+                                                        e.target.style.boxShadow = `0 4px 8px ${logoColors.primary}40`;
+                                                    }}
+                                                    onMouseLeave={(e) => {
+                                                        e.target.style.opacity = '1';
+                                                        e.target.style.transform = 'translateY(0)';
+                                                        e.target.style.boxShadow = 'none';
+                                                    }}
+                                                >
+                                                    Buy Now
+                                                </button>
                                             </div>
                                         </div>
-                                        <button
-                                            onClick={(e) => handleAddBundleToCart(e, bundle)}
-                                            className="btn w-100 mt-2 mb-1"
-                                            style={{
-                                                background: 'white',
-                                                color: logoColors.primary,
-                                                border: `2px solid ${logoColors.primary}`,
-                                                padding: '0.6rem',
-                                                borderRadius: '8px',
-                                                fontSize: '0.85rem',
-                                                fontWeight: '500',
-                                                cursor: 'pointer',
-                                                transition: 'all 0.3s ease'
-                                            }}
-                                            onMouseEnter={(e) => {
-                                                e.target.style.background = logoColors.primary;
-                                                e.target.style.color = 'white';
-                                            }}
-                                            onMouseLeave={(e) => {
-                                                e.target.style.background = 'white';
-                                                e.target.style.color = logoColors.primary;
-                                            }}
-                                        >
-                                            <FaShoppingCart className="me-2" />
-                                            Add to Cart
-                                        </button>
-                                        <button
-                                            onClick={() => {
-                                              // Order Now checkout
-                                              navigate('/checkout', {
-                                                state: {
-                                                  products: [{
-                                                    ...bundle,
-                                                    _id: `bundle_${bundle._id}`,
-                                                    isBundle: true,
-                                                    quantity: 1,
-                                                    price: bundle.bundlePrice,
-                                                    discountedPrice: bundle.bundlePrice,
-                                                    name: bundle.name,
-                                                    bundleProducts: bundle.products,
-                                                    image: bundle.image ? [bundle.image] : bundle.products[0]?.image || []
-                                                  }]
-                                                }
-                                              });
-                                            }}
-                                            className="btn w-100"
-                                            style={{
-                                                background: logoColors.gradient,
-                                                color: 'white',
-                                                border: 'none',
-                                                padding: '0.6rem',
-                                                borderRadius: '8px',
-                                                fontSize: '0.85rem',
-                                                fontWeight: '500',
-                                                cursor: 'pointer',
-                                                transition: 'all 0.3s ease'
-                                            }}
-
-                                            onMouseEnter={(e) => {
-                                                e.target.style.opacity = '0.9';
-                                                e.target.style.transform = 'translateY(-2px)';
-                                                e.target.style.boxShadow = `0 4px 12px ${logoColors.primary}40`;
-                                            }}
-                                            onMouseLeave={(e) => {
-                                                e.target.style.opacity = '1';
-                                                e.target.style.transform = 'translateY(0)';
-                                                e.target.style.boxShadow = 'none';
-                                            }}
-                                        >
-                                            
-                                            Order Now
-                                        </button>
-                                    </div>
-                                </Card.Body>
-                            </Card>
-                        </Col>
-                    ))}
+                                    </Card.Body>
+                                </Card>
+                            </Col>
+                        ))}
                     </Row>
                 </div>
-                <style>{`
-                    @media (max-width: 768px) {
-                        .product-scroll-container {
-                            margin-right: -15px;
-                            margin-left: -15px;
-                            padding-right: 15px;
-                            padding-left: 15px;
-                        }
-                        .product-scroll-container .row::-webkit-scrollbar {
-                            display: none;
-                        }
-                        .product-scroll-container .row {
-                            -ms-overflow-style: none;
-                            scrollbar-width: none;
-                        }
-                    }
-                    @media (min-width: 769px) {
-                        .product-scroll-container .row {
-                            overflow-x: visible !important;
-                        }
-                    }
-                `}</style>
 
+                {/* Pagination Dots */}
+                {totalPages > 1 && (
+                    <div style={{
+                        display: 'flex',
+                        justifyContent: 'center',
+                        gap: '8px',
+                        marginTop: '2rem'
+                    }}>
+                        {Array.from({ length: totalPages }).map((_, index) => (
+                            <button
+                                key={index}
+                                onClick={() => setCurrentPage(index)}
+                                style={{
+                                    width: '8px',
+                                    height: '8px',
+                                    borderRadius: '50%',
+                                    border: 'none',
+                                    background: index === currentPage ? logoColors.primary : '#ddd',
+                                    cursor: 'pointer',
+                                    padding: 0,
+                                    transition: 'all 0.3s ease',
+                                    transform: index === currentPage ? 'scale(1.2)' : 'scale(1)'
+                                }}
+                            />
+                        ))}
+                    </div>
+                )}
+
+                {/* View All Button */}
                 {bundles.length > 0 && (
                     <div className="text-center mt-4">
                         <button
@@ -368,4 +476,3 @@ export default function LatestBundles() {
         </div>
     );
 }
-

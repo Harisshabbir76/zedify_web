@@ -199,21 +199,10 @@ export default function Category() {
           </Alert>
         ) : (
           <>
-            {/* Mobile view - show 2 categories per row */}
-            <div className="d-block d-md-none">
-              <Row className="g-3">
-                {categories.slice(0, 3).map(category => renderCategoryCard(category))}
-                {renderCategoryCard(null, true)}
-              </Row>
-            </div>
-
-            {/* Tablet/Desktop view - show responsive columns */}
-            <div className="d-none d-md-block">
-              <Row className="g-4">
-                {categories.slice(0, 4).map(category => renderCategoryCard(category))}
-                {renderCategoryCard(null, true)}
-              </Row>
-            </div>
+            {/* All categories - responsive grid */}
+            <Row className="g-3 g-md-4">
+              {categories.map(category => renderCategoryCard(category))}
+            </Row>
           </>
         )}
       </Container>

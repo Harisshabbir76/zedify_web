@@ -6,7 +6,6 @@ import {
   Container,
   Button,
   Form,
-  InputGroup,
   Badge,
   Image,
   Offcanvas
@@ -28,7 +27,7 @@ import {
 import { useRef } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { CartContext } from '../components/CartContext';
-import logo from '../images/logo.png';
+
 
 const Navbar = () => {
   const [showSidebar, setShowSidebar] = useState(false);
@@ -118,6 +117,52 @@ const Navbar = () => {
 
   return (
     <>
+<style>{`
+        /* Logo text styling */
+        .text-logo {
+          font-size: clamp(1.5rem, 4vw, 2.2rem);
+          font-weight: 900;
+          color: white;
+          letter-spacing: 1px;
+          text-transform: uppercase;
+          font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+          line-height: 1;
+          display: flex;
+          align-items: center;
+        }
+
+
+
+        /* Global reset */
+        body, html {
+          margin: 0 !important;
+          padding: 0 !important;
+        }
+        
+        /* Navbar specific */
+        .navbar {
+          margin-bottom: 0 !important;
+          padding-top: 0.5rem !important;
+          padding-bottom: 0.5rem !important;
+        }
+        
+        .container-fluid {
+          padding-left: 15px !important;
+          padding-right: 15px !important;
+        }
+        
+        .dropdown:hover .dropdown-content {
+          display: block !important;
+        }
+        .dropdown-content {
+          display: none;
+        }
+        .dropdown-content a:hover {
+          background-color: #f5f5f5 !important;
+          color: ${navbarColors.primary} !important;
+        }
+      `}</style>
+      
       <BootstrapNavbar
         expand="lg"
         sticky="top"
@@ -126,21 +171,15 @@ const Navbar = () => {
           boxShadow: '0 2px 10px rgba(0,0,0,0.05)',
           borderBottom: `1px solid ${navbarColors.border}`,
           padding: '0.5rem 0',
+          margin: 0
         }}
       >
-        <Container fluid="lg">
+        <Container fluid="lg" style={{ padding: 0 }}>
           {/* Logo */}
-          <BootstrapNavbar.Brand as={Link} to="/" className="d-flex align-items-center me-3">
-            <Image
-              src={logo}
-              alt="Zedify"
-              style={{
-                height: '40px',
-                width: 'auto',
-                maxWidth: '140px',
-                objectFit: 'contain'
-              }}
-            />
+<BootstrapNavbar.Brand as={Link} to="/" className="d-flex align-items-center me-3" style={{ padding: 0 }}>
+            <span className="text-logo">
+              LOGO
+            </span>
           </BootstrapNavbar.Brand>
 
           {/* Mobile menu and cart button */}
@@ -160,7 +199,8 @@ const Navbar = () => {
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
-                border: 'none'
+                border: 'none',
+                padding: 0
               }}
             >
               <FiShoppingBag size={20} />
@@ -201,7 +241,8 @@ const Navbar = () => {
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
-                border: 'none'
+                border: 'none',
+                padding: 0
               }}
             >
               <FiMenu size={20} />
@@ -383,41 +424,60 @@ const Navbar = () => {
               ))}
             </Nav>
 
-            {/* Search Bar - Always visible */}
-            <div className="d-flex align-items-center mx-2" style={{ minWidth: '220px' }}>
+            {/* Search Bar - Fixed with white background and proper pill shape */}
+            <div className="d-flex align-items-center mx-2" style={{ minWidth: '260px' }}>
               <Form onSubmit={handleSearch} className="w-100">
-                <InputGroup>
-                  <Form.Control
+                <div style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  backgroundColor: 'white',
+                  borderRadius: '50px',
+                  overflow: 'hidden',
+                  boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
+                  width: '100%',
+                  height: '38px'
+                }}>
+                  <input
                     type="text"
                     placeholder="Search products..."
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
                     style={{
-                      borderRadius: '50px 0 0 50px',
-                      border: `1px solid ${navbarColors.border}`,
-                      borderRight: 'none',
-                      padding: '0.4rem 0.8rem',
+                      flex: 1,
+                      border: 'none',
+                      padding: '0 1rem',
                       fontSize: '0.85rem',
-                      backgroundColor: '#F5F5F5'
+                      outline: 'none',
+                      backgroundColor: 'white',
+                      height: '100%'
                     }}
                   />
-                  <Button
+                  <button
                     type="submit"
                     style={{
-                      background: 'transparent',
+                      background: 'white',
                       border: 'none',
-                      borderRadius: '0 50px 50px 0',
-                      padding: '0.4rem 0.8rem',
+                      color: navbarColors.primary,
+                      width: '38px',
+                      height: '38px',
                       display: 'flex',
                       alignItems: 'center',
-                      justifyContent: 'center'
+                      justifyContent: 'center',
+                      cursor: 'pointer',
+                      transition: 'all 0.2s ease'
                     }}
-                    onMouseEnter={(e) => e.currentTarget.style.opacity = '0.7'}
-                    onMouseLeave={(e) => e.currentTarget.style.opacity = '1'}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.backgroundColor = '#f5f5f5';
+                      e.currentTarget.style.color = navbarColors.primary;
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.backgroundColor = 'white';
+                      e.currentTarget.style.color = navbarColors.primary;
+                    }}
                   >
-                    <FiSearch size={18} color="#222" />
-                  </Button>
-                </InputGroup>
+                    <FiSearch size={16} />
+                  </button>
+                </div>
               </Form>
             </div>
 
@@ -439,7 +499,8 @@ const Navbar = () => {
                   alignItems: 'center',
                   justifyContent: 'center',
                   border: 'none',
-                  transition: 'all 0.2s ease'
+                  transition: 'all 0.2s ease',
+                  padding: 0
                 }}
                 onMouseEnter={(e) => {
                   e.target.style.backgroundColor = '#E5E5E5';
@@ -468,7 +529,8 @@ const Navbar = () => {
                   alignItems: 'center',
                   justifyContent: 'center',
                   border: 'none',
-                  transition: 'all 0.2s ease'
+                  transition: 'all 0.2s ease',
+                  padding: 0
                 }}
                 onMouseEnter={(e) => {
                   e.target.style.backgroundColor = '#E5E5E5';
@@ -723,20 +785,6 @@ const Navbar = () => {
           </Offcanvas.Body>
         </Offcanvas>
       </BootstrapNavbar>
-
-      {/* Add CSS for dropdown hover effect */}
-      <style>{`
-        .dropdown:hover .dropdown-content {
-          display: block !important;
-        }
-        .dropdown-content {
-          display: none;
-        }
-        .dropdown-content a:hover {
-          background-color: #f5f5f5 !important;
-          color: ${navbarColors.primary} !important;
-        }
-      `}</style>
     </>
   );
 };

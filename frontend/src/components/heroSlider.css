@@ -1,5 +1,33 @@
 /* heroSlider.css */
 
+/* Global reset to remove any gaps */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html, body {
+  margin: 0 !important;
+  padding: 0 !important;
+  overflow-x: hidden;
+}
+
+/* Navbar color palette */
+:root {
+  --pink-primary: #fe7e8b;
+  --pink-secondary: #e65c70;
+  --pink-light: #ffd1d4;
+  --pink-dark: #d64555;
+  --pink-background: #fff5f6;
+  --pink-gradient: linear-gradient(135deg, #fe7e8b 0%, #e65c70 100%);
+  --pink-soft-gradient: linear-gradient(135deg, #fff5f6 0%, #ffd1d4 100%);
+}
+
+/* Hero Slider - Force no margin/padding */
+
+
+
 /* Navbar color palette */
 :root {
   --pink-primary: #fe7e8b;
@@ -792,3 +820,15 @@
   }
 }
 
+.hero-slider {
+  position: relative;
+  width: 100%;
+  height: 80vh;
+  max-height: 800px;
+  overflow: hidden;
+  margin: 0 !important;
+  padding: 0 !important;
+  margin-top: 0 !important;
+  padding-top: 0 !important;
+  background: var(--pink-background);
+}

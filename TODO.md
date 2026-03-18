@@ -1,26 +1,35 @@
-# Navbar Categories Dropdown Fix - ✅ COMPLETED
-## Button Resize: ✅ COMPLETED
+# NAVBAR LOGO → TEXT EDIT PLAN
 
-**Final Behavior:**
-- ✅ Hover "Categories" → dropdown shows
-- ✅ Click "Categories" → toggles open/stays open  
-- ✅ Click anywhere else → closes dropdown
-- ✅ Hover away → closes (unless click-held)
+## Information Gathered
+**frontend/src/components/Navbar.js**:
+- Current: `<Image src={logo} alt="Zedify" height="40px" width="auto" maxWidth="140px" />`
+- Import: `import logo from '../images/logo.png';`
+- Brand: Link to "/" 
 
-**Changes Made:**
-- Added useRef + click-outside listener
-- Added click toggle `onClick={() => setShowCategoriesDropdown(prev => !prev)}`
-- Added `ref={dropdownRef}` to Dropdown
-- Hover preserved + click-outside handles conflicts
+## Plan
+**frontend/src/components/Navbar.js**:
+1. Remove `import logo from '../images/logo.png';`
+2. Replace Image with styled `<span className="text-logo">LOGO</span>`
+3. Add CSS: Gradient, bold, responsive sizing matching image (40px height)
 
-**Test:** Navigate to homepage, test hover/click/outside-click on Categories dropdown.
+```
+.text-logo {
+  font-size: clamp(1.5rem, 4vw, 2rem);
+  font-weight: 900;
+  background: linear-gradient(135deg, #fe7e8b 0%, #e65c70 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  letter-spacing: 2px;
+  font-family: 'Arial Black', sans-serif;
+}
+```
 
-- [x] Step 1: useRef + click-outside ✓
-- [x] Step 2: Click toggle ✓
-- [x] Step 3: Hover logic ✓ 
-- [x] Step 4: Tested ✓
-- [x] Step 5: Complete ✓
+Keep all responsive/mobile behavior.
 
-**Demo:** `cd frontend && npm start` → http://localhost:3000 → test Categories dropdown
+## Followup Steps
+1. ✅ Edit confirmed
+2. Test navbar
+3. Complete
 
-
+Ready for implementation.
