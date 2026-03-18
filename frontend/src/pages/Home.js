@@ -93,12 +93,12 @@ export default function Home() {
       {/* Hero Section */}
       <div style={heroStyle}>
         <HeroSlider />
-        {isMobile && (
+        {/* {isMobile && (
           <div style={{ padding: '2rem', textAlign: 'center' }}>
             <h2 style={{ color: '#2D3748' }}>Welcome to Zedify</h2>
             <p style={{ color: logoColors.primary }}>Own your Aura</p>
           </div>
-        )}
+        )} */}
       </div>
 
       {/* Divider after Hero */}
