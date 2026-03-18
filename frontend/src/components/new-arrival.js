@@ -17,14 +17,14 @@ import './heroSlider.css';
 
 // Navbar color palette
 const logoColors = {
-  primary: '#fe7e8b', // Navbar primary color
-  secondary: '#e65c70', // Navbar secondary color
-  light: '#ffd1d4', // Navbar light color
-  dark: '#d64555', // Navbar dark color
-  background: '#fff5f6', // Super light - almost white
-  lighterBg: '#fff9fa', // Even lighter - subtle tint
-  gradient: 'linear-gradient(135deg, #fe7e8b 0%, #e65c70 100%)', // Navbar gradient
-  softGradient: 'linear-gradient(135deg, #fff5f6 0%, #ffd1d4 100%)', // Very soft gradient
+  primary: '#fe7e8b',
+  secondary: '#e65c70',
+  light: '#ffd1d4',
+  dark: '#d64555',
+  background: '#fff5f6',
+  lighterBg: '#fff9fa',
+  gradient: 'linear-gradient(135deg, #fe7e8b 0%, #e65c70 100%)',
+  softGradient: 'linear-gradient(135deg, #fff5f6 0%, #ffd1d4 100%)',
 };
 
 const NewArrivals = () => {
@@ -94,21 +94,29 @@ const NewArrivals = () => {
     }
   };
 
-
+  const getProductImage = (product) => {
+    if (!product?.image?.[0]) return '/placeholder.jpg';
+    if (product.image[0].startsWith('http')) return product.image[0];
+    return `${process.env.REACT_APP_API_URL}${product.image[0]}`;
+  };
 
   return (
-    <Container fluid className="new-arrivals-container py-4" style={{
+    <Container fluid className="new-arrivals-container py-3 py-md-5" style={{
       background: logoColors.background,
       minHeight: '100vh'
     }}>
       <Container>
-        <div className="page-header-wrapper mb-4 mb-md-5 text-center">
-          <h1 className="page-header" style={{ color: logoColors.dark }}>
-            <FaCalendarAlt className="me-2" style={{ color: logoColors.primary }} />
+        <div className="page-header-wrapper mb-3 mb-md-5 text-center">
+          <h1 className="page-header" style={{ 
+            color: logoColors.dark,
+            fontSize: 'clamp(1.5rem, 5vw, 2.5rem)',
+            fontWeight: '600'
+          }}>
+            <FaCalendarAlt className="me-2" style={{ color: logoColors.primary, fontSize: 'clamp(1.2rem, 4vw, 2rem)' }} />
             New Arrivals
           </h1>
 
-          <p className="lead mt-3" style={{ color: '#4A5568' }}>
+          <p className="lead mt-2" style={{ color: '#4A5568', fontSize: 'clamp(0.9rem, 3vw, 1.1rem)' }}>
             Discover our latest products added in the last 30 days
           </p>
 
@@ -116,8 +124,8 @@ const NewArrivals = () => {
           <div style={{
             height: '2px',
             background: `linear-gradient(90deg, transparent, ${logoColors.primary}40, transparent)`,
-            width: '200px',
-            margin: '1.5rem auto'
+            width: 'clamp(80px, 20vw, 200px)',
+            margin: '1rem auto'
           }} />
         </div>
 
@@ -136,19 +144,37 @@ const NewArrivals = () => {
             {error}
           </Alert>
         ) : filteredProducts.length === 0 ? (
-          <Alert variant="info" className="text-center">
-            No new arrivals found in the last 30 days
-          </Alert>
+          <div className="text-center my-5 py-5">
+            <div style={{
+              width: '80px',
+              height: '80px',
+              borderRadius: '50%',
+              background: logoColors.softGradient,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              margin: '0 auto 1.5rem'
+            }}>
+              <FaCalendarAlt size={32} style={{ color: logoColors.primary }} />
+            </div>
+            <h4 style={{ color: logoColors.dark, marginBottom: '0.5rem' }}>
+              No New Arrivals
+            </h4>
+            <p style={{ color: '#718096', fontSize: '1rem', maxWidth: '400px', margin: '0 auto' }}>
+              Check back soon for our latest products!
+            </p>
+          </div>
         ) : (
           <>
             <div className="d-block d-md-none">
-              <Row xs={2} className="g-3">
+              <Row xs={2} className="g-2">
                 {filteredProducts.map(product => (
                   <ProductCard
                     key={product._id}
                     product={product}
                     onAddToCart={handleAddToCart}
                     onViewDetails={() => navigate(`/catalog/${product._id}`)}
+                    getProductImage={getProductImage}
                   />
                 ))}
               </Row>
@@ -162,9 +188,17 @@ const NewArrivals = () => {
                     product={product}
                     onAddToCart={handleAddToCart}
                     onViewDetails={() => navigate(`/catalog/${product._id}`)}
+                    getProductImage={getProductImage}
                   />
                 ))}
               </Row>
+            </div>
+
+            {/* Product count */}
+            <div className="text-center mt-4">
+              <p style={{ color: '#718096', fontSize: '0.85rem' }}>
+                Showing {filteredProducts.length} new arrival{filteredProducts.length !== 1 ? 's' : ''}
+              </p>
             </div>
           </>
         )}
@@ -173,40 +207,46 @@ const NewArrivals = () => {
   );
 };
 
-const ProductCard = ({ product, onAddToCart, onViewDetails }) => {
-  const getProductImage = (product) => {
-    if (!product?.image?.[0]) return '/placeholder.jpg';
-    if (product.image[0].startsWith('http')) return product.image[0];
-    return `${process.env.REACT_APP_API_URL}${product.image[0]}`;
-  };
-
+const ProductCard = ({ product, onAddToCart, onViewDetails, getProductImage }) => {
   return (
     <Col>
-      <Card className="product-card h-100 border-0" style={{
-        background: 'white',
-        borderRadius: '12px',
-        overflow: 'hidden',
-        transition: 'all 0.3s ease',
-        boxShadow: '0 4px 12px rgba(0,0,0,0.05)',
-        cursor: 'pointer'
-      }}
+      <Card 
+        className="product-card h-100 border-0"
+        onClick={onViewDetails}
+        style={{
+          background: 'white',
+          borderRadius: '8px',
+          overflow: 'hidden',
+          transition: 'all 0.2s ease',
+          boxShadow: '0 2px 8px rgba(0,0,0,0.04)',
+          cursor: 'pointer',
+          height: '100%',
+          position: 'relative'
+        }}
         onMouseEnter={(e) => {
-          e.currentTarget.style.transform = 'translateY(-5px)';
-          e.currentTarget.style.boxShadow = `0 8px 20px ${logoColors.primary}30`;
+          e.currentTarget.style.transform = 'translateY(-4px)';
+          e.currentTarget.style.boxShadow = `0 8px 16px ${logoColors.primary}20`;
         }}
         onMouseLeave={(e) => {
           e.currentTarget.style.transform = 'translateY(0)';
-          e.currentTarget.style.boxShadow = '0 4px 12px rgba(0,0,0,0.05)';
+          e.currentTarget.style.boxShadow = '0 2px 8px rgba(0,0,0,0.04)';
+        }}
+      >
+        <div className="product-image-container" style={{ 
+          position: 'relative',
+          width: '100%',
+          aspectRatio: '3/4',
+          overflow: 'hidden',
+          backgroundColor: '#f8f9fa'
         }}>
-        <div className="product-image-container" style={{ position: 'relative' }}>
           <Card.Img
             variant="top"
             src={getProductImage(product)}
             alt={product.name}
-            onClick={onViewDetails}
             className="product-img"
             style={{
-              height: '250px',
+              width: '100%',
+              height: '100%',
               objectFit: 'cover',
               transition: 'transform 0.3s ease'
             }}
@@ -220,118 +260,196 @@ const ProductCard = ({ product, onAddToCart, onViewDetails }) => {
               e.target.src = '/placeholder.jpg';
             }}
           />
+          
+          {/* Discount Badge */}
           {product.discountedPrice < product.originalPrice && (
             <div style={{
               position: 'absolute',
-              top: '10px',
-              left: '10px',
+              top: '8px',
+              left: '8px',
               background: logoColors.gradient,
               color: 'white',
               padding: '4px 8px',
               borderRadius: '4px',
-              fontSize: '0.75rem',
-              fontWeight: 'bold',
-              zIndex: 1
+              fontSize: '0.7rem',
+              fontWeight: '600',
+              zIndex: 2,
+              boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
             }}>
               {Math.round(100 - (product.discountedPrice / product.originalPrice * 100))}% OFF
             </div>
           )}
-          <Badge
-            bg={product.stock > 0 ? "success" : "danger"}
+
+          {/* New Arrival Badge */}
+          <div style={{
+            position: 'absolute',
+            top: '8px',
+            right: '8px',
+            background: logoColors.primary,
+            color: 'white',
+            padding: '4px 8px',
+            borderRadius: '4px',
+            fontSize: '0.65rem',
+            fontWeight: '600',
+            zIndex: 2,
+            boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
+          }}>
+            NEW
+          </div>
+
+          {/* Quick Add Button - Desktop only */}
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              onAddToCart(product);
+            }}
+            className="d-none d-md-block"
+            disabled={product.stock <= 0}
             style={{
               position: 'absolute',
-              top: '10px',
-              right: '10px',
-              padding: '4px 8px',
-              fontSize: '0.7rem',
-              zIndex: 1,
-              background: product.stock > 0 ? logoColors.primary : '#dc3545',
-              border: 'none'
+              bottom: '10px',
+              left: '50%',
+              transform: 'translateX(-50%)',
+              background: 'white',
+              border: `1px solid ${logoColors.primary}`,
+              color: logoColors.primary,
+              padding: '6px 12px',
+              borderRadius: '30px',
+              fontSize: '0.8rem',
+              fontWeight: '500',
+              cursor: product.stock > 0 ? 'pointer' : 'not-allowed',
+              opacity: 0,
+              transition: 'opacity 0.2s ease',
+              whiteSpace: 'nowrap',
+              boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
+              zIndex: 3
+            }}
+            onMouseEnter={(e) => {
+              if (product.stock > 0) {
+                e.target.style.background = logoColors.primary;
+                e.target.style.color = 'white';
+              }
+            }}
+            onMouseLeave={(e) => {
+              if (product.stock > 0) {
+                e.target.style.background = 'white';
+                e.target.style.color = logoColors.primary;
+              }
             }}
           >
-            {product.stock > 0 ? 'In Stock' : 'Out of Stock'}
-          </Badge>
+            <FaShoppingCart className="me-1" size={12} />
+            Quick Add
+          </button>
+
+          <style>{`
+            .product-card:hover .d-md-block {
+              opacity: 1 !important;
+            }
+          `}</style>
         </div>
-        <Card.Body className="d-flex flex-column" style={{ padding: '1rem' }}>
-          <Card.Title
+
+        <Card.Body className="d-flex flex-column" style={{ padding: '0.75rem' }}>
+          {/* Product Title */}
+          <Card.Title 
             className="product-title"
-            onClick={onViewDetails}
             style={{
-              fontSize: '1rem',
-              fontWeight: '600',
+              fontSize: '0.9rem',
+              fontWeight: '500',
               color: '#2D3748',
               marginBottom: '0.25rem',
-              cursor: 'pointer'
+              lineHeight: '1.4',
+              display: '-webkit-box',
+              WebkitLineClamp: 2,
+              WebkitBoxOrient: 'vertical',
+              overflow: 'hidden',
+              textOverflow: 'ellipsis',
+              minHeight: '2.5rem'
             }}
           >
             {product.name}
           </Card.Title>
-          <Card.Text className="text-muted product-category" style={{
-            fontSize: '0.85rem',
-            marginBottom: '0.5rem'
+
+          {/* Category - Hidden on mobile */}
+          <Card.Text className="d-none d-md-block text-muted product-category" style={{
+            fontSize: '0.75rem',
+            marginBottom: '0.5rem',
+            textTransform: 'uppercase',
+            letterSpacing: '0.5px'
           }}>
             {typeof product.category === 'object' ? product.category.name : (product.category || 'Uncategorized')}
           </Card.Text>
-          <div className="mt-auto">
-            <div className="d-flex justify-content-between align-items-center mb-2">
-              <div className="price">
-                {product.discountedPrice < product.originalPrice && (
-                  <span className="original-price text-muted text-decoration-line-through me-2" style={{ fontSize: '0.8rem' }}>
-                    Rs. {product.originalPrice}
-                  </span>
-                )}
-                <span className="current-price fw-bold" style={{ color: logoColors.primary, fontSize: '1.1rem' }}>
-                  Rs. {product.discountedPrice}
+
+          {/* Price - Now on its own row */}
+          <div className="price-wrapper mb-1">
+            <div className="price d-flex align-items-center flex-wrap">
+              {product.discountedPrice < product.originalPrice && (
+                <span className="original-price text-muted text-decoration-line-through me-2" style={{ fontSize: '0.7rem' }}>
+                  Rs. {product.originalPrice?.toLocaleString()}
                 </span>
-              </div>
-              <div className="rating" style={{ fontSize: '0.85rem' }}>
-                <FaStar style={{ color: logoColors.primary }} />
-                <span className="ms-1" style={{ color: '#4A5568' }}>{product.rating}</span>
-              </div>
+              )}
+              <span className="current-price fw-bold" style={{ color: logoColors.primary, fontSize: '0.95rem' }}>
+                Rs. {product.discountedPrice?.toLocaleString()}
+              </span>
             </div>
-            <button
-              className={`add-to-cart-btn w-100 mt-2 ${product.stock <= 0 ? 'disabled' : ''}`}
-              onClick={() => onAddToCart(product)}
-              disabled={product.stock <= 0}
+          </div>
+
+          {/* Rating - Now below price */}
+          <div className="rating-wrapper mb-2">
+            <div className="rating d-flex align-items-center" style={{ fontSize: '0.7rem' }}>
+              <FaStar style={{ color: logoColors.primary, fontSize: '0.7rem' }} />
+              <span className="ms-1" style={{ color: '#4A5568' }}>{product.rating}</span>
+            </div>
+          </div>
+
+          {/* Stock status - Mobile only */}
+          <div className="d-md-none mb-2">
+            <Badge
+              bg={product.stock > 0 ? "success" : "danger"}
               style={{
-                background: product.stock > 0 ? logoColors.gradient : '#e2e8f0',
-                color: product.stock > 0 ? 'white' : '#718096',
+                background: product.stock > 0 ? logoColors.primary : '#dc3545',
                 border: 'none',
-                padding: '0.6rem',
-                borderRadius: '8px',
-                fontSize: '0.9rem',
-                fontWeight: '500',
-                cursor: product.stock > 0 ? 'pointer' : 'not-allowed',
-                transition: 'all 0.3s ease'
-              }}
-              onMouseEnter={(e) => {
-                if (product.stock > 0) {
-                  e.target.style.opacity = '0.9';
-                  e.target.style.transform = 'translateY(-2px)';
-                  e.target.style.boxShadow = `0 4px 12px ${logoColors.primary}40`;
-                }
-              }}
-              onMouseLeave={(e) => {
-                if (product.stock > 0) {
-                  e.target.style.opacity = '1';
-                  e.target.style.transform = 'translateY(0)';
-                  e.target.style.boxShadow = 'none';
-                }
+                fontSize: '0.6rem',
+                padding: '2px 6px',
+                fontWeight: '400'
               }}
             >
-              {product.stock > 0 ? (
-                <>
-                  <FaShoppingCart className="me-2" />
-                  Add to Cart
-                </>
-              ) : (
-                <>
-                  <FaBoxOpen className="me-2" />
-                  Out of Stock
-                </>
-              )}
-            </button>
+              {product.stock > 0 ? 'In Stock' : 'Out of Stock'}
+            </Badge>
           </div>
+
+          {/* Mobile Add to Cart Button */}
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              onAddToCart(product);
+            }}
+            className="d-md-none w-100"
+            disabled={product.stock <= 0}
+            style={{
+              background: product.stock > 0 ? logoColors.gradient : '#e2e8f0',
+              color: product.stock > 0 ? 'white' : '#718096',
+              border: 'none',
+              padding: '8px 0',
+              borderRadius: '6px',
+              fontSize: '0.8rem',
+              fontWeight: '500',
+              cursor: product.stock > 0 ? 'pointer' : 'not-allowed',
+              transition: 'all 0.2s ease',
+              marginTop: '0.25rem'
+            }}
+          >
+            {product.stock > 0 ? (
+              <>
+                <FaShoppingCart className="me-2" size={12} />
+                Add to Cart
+              </>
+            ) : (
+              <>
+                <FaBoxOpen className="me-2" size={12} />
+                Out of Stock
+              </>
+            )}
+          </button>
         </Card.Body>
       </Card>
     </Col>

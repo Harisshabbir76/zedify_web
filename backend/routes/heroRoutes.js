@@ -4,9 +4,21 @@ const HeroSlide = require('../Models/HeroSlide');
 const multer = require('multer');
 const { storage } = require('../config/cloudinary');
 
-const upload = multer({ storage: storage });
+const upload = multer({ 
+  storage: storage,
+  limits: { 
+    fileSize: 15 * 1024 * 1024 // 15MB limit (Cloudinary free plan ~10MB, buffer)
+  },
+  fileFilter: (req, file, cb) => {
+    if (file.mimetype.startsWith('image/')) {
+      cb(null, true);
+    } else {
+      cb(new Error('Only images allowed'), false);
+    }
+  }
+});
 
-// GET /api/hero-slides - Get all hero slides
+// GET /api/hero-slides
 router.get('/api/hero-slides', async (req, res) => {
   try {
     const slides = await HeroSlide.find({ isActive: true });
@@ -16,33 +28,75 @@ router.get('/api/hero-slides', async (req, res) => {
   }
 });
 
-// POST /api/hero-slides - Create a hero slide
-router.post('/api/hero-slides', upload.single('image'), async (req, res) => {
+// POST /api/hero-slides
+router.post('/api/hero-slides', upload.fields([
+  { name: 'desktopImage', maxCount: 1 },
+  { name: 'mobileImage', maxCount: 1 }
+]), async (req, res) => {
   try {
     const { title, subtitle, ctaText, ctaLink } = req.body;
-    const image = req.file.path;
-    const slide = new HeroSlide({ image, title, subtitle, ctaText, ctaLink });
+    const desktopImage = req.files?.desktopImage?.[0]?.path;
+    const mobileImage = req.files?.mobileImage?.[0]?.path;
+
+    if (!desktopImage) {
+      return res.status(400).json({ message: 'Desktop image is required (max 10MB - resize if needed)' });
+    }
+    if (!mobileImage) {
+      return res.status(400).json({ message: 'Mobile image is required (max 10MB - resize if needed)' });
+    }
+
+    const slide = new HeroSlide({ 
+      desktopImage, 
+      mobileImage, 
+      title: title || '',
+      subtitle: subtitle || '',
+      ctaText: ctaText || 'Shop Now',
+      ctaLink: ctaLink || '/catalog'
+    });
     await slide.save();
     res.status(201).json(slide);
   } catch (err) {
-    res.status(500).json({ message: 'Error creating slide' });
+    console.error('Create slide error:', err);
+    if (err.message.includes('Cloudinary') || err.message.includes('file size')) {
+      res.status(400).json({ message: 'Image too large. Please use <10MB images (Cloudinary free plan limit). Resize your images.' });
+    } else {
+      res.status(500).json({ message: 'Error creating slide', error: err.message });
+    }
   }
 });
 
-// PUT /api/hero-slides/:id - Update a hero slide
-router.put('/api/hero-slides/:id', upload.single('image'), async (req, res) => {
+// PUT /api/hero-slides/:id
+router.put('/api/hero-slides/:id', upload.fields([
+  { name: 'desktopImage', maxCount: 1 },
+  { name: 'mobileImage', maxCount: 1 }
+]), async (req, res) => {
   try {
     const { title, subtitle, ctaText, ctaLink, isActive } = req.body;
-    const updateData = { title, subtitle, ctaText, ctaLink, isActive };
-    if (req.file) updateData.image = req.file.path;
+    const updateData = { 
+      title: title || '',
+      subtitle: subtitle || '',
+      ctaText: ctaText || 'Shop Now',
+      ctaLink: ctaLink || '/catalog',
+      ...(isActive !== undefined && { isActive })
+    };
+    
+    if (req.files?.desktopImage) updateData.desktopImage = req.files.desktopImage[0].path;
+    if (req.files?.mobileImage) updateData.mobileImage = req.files.mobileImage[0].path;
+
     const slide = await HeroSlide.findByIdAndUpdate(req.params.id, updateData, { new: true });
+    if (!slide) return res.status(404).json({ message: 'Slide not found' });
     res.json(slide);
   } catch (err) {
-    res.status(500).json({ message: 'Error updating slide' });
+    console.error('Update slide error:', err);
+    if (err.message.includes('Cloudinary') || err.message.includes('file size')) {
+      res.status(400).json({ message: 'Image too large. Please use <10MB images.' });
+    } else {
+      res.status(500).json({ message: 'Error updating slide', error: err.message });
+    }
   }
 });
 
-// DELETE /api/hero-slides/:id - Delete a hero slide
+// DELETE /api/hero-slides/:id
 router.delete('/api/hero-slides/:id', async (req, res) => {
   try {
     await HeroSlide.findByIdAndDelete(req.params.id);

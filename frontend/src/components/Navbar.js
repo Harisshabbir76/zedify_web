@@ -28,7 +28,6 @@ import { useRef } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { CartContext } from '../components/CartContext';
 
-
 const Navbar = () => {
   const [showSidebar, setShowSidebar] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
@@ -117,7 +116,7 @@ const Navbar = () => {
 
   return (
     <>
-<style>{`
+      <style>{`
         /* Logo text styling */
         .text-logo {
           font-size: clamp(1.5rem, 4vw, 2.2rem);
@@ -130,8 +129,6 @@ const Navbar = () => {
           display: flex;
           align-items: center;
         }
-
-
 
         /* Global reset */
         body, html {
@@ -161,6 +158,78 @@ const Navbar = () => {
           background-color: #f5f5f5 !important;
           color: ${navbarColors.primary} !important;
         }
+
+        /* Mobile layout styles */
+        @media (max-width: 991px) {
+          .mobile-nav-container {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            width: 100%;
+            padding: 0 10px;
+          }
+          
+          .mobile-left {
+            flex: 1;
+            display: flex;
+            justify-content: flex-start;
+          }
+          
+          .mobile-center {
+            flex: 1;
+            display: flex;
+            justify-content: center;
+          }
+          
+          .mobile-right {
+            flex: 1;
+            display: flex;
+            justify-content: flex-end;
+          }
+          
+          .mobile-cart-btn,
+          .mobile-menu-btn {
+            width: 40px !important;
+            height: 40px !important;
+          }
+        }
+
+        /* Sidebar styles */
+        .offcanvas {
+          background: ${navbarColors.background} !important;
+        }
+        
+        .offcanvas-header {
+          background: ${navbarColors.background} !important;
+          border-bottom: 1px solid ${navbarColors.border} !important;
+        }
+        
+        .offcanvas-title {
+          color: white !important;
+          font-weight: 600 !important;
+        }
+        
+        .offcanvas .btn-close {
+          filter: brightness(0) invert(1) !important;
+        }
+        
+        .offcanvas .nav-link {
+          color: white !important;
+        }
+        
+        .offcanvas .nav-link:hover {
+          color: ${navbarColors.primary} !important;
+          background-color: rgba(255, 255, 255, 0.1) !important;
+        }
+        
+        .offcanvas .nav-link.active {
+          color: ${navbarColors.primary} !important;
+          background-color: rgba(255, 255, 255, 0.15) !important;
+        }
+        
+        .offcanvas .border-top {
+          border-color: rgba(255, 255, 255, 0.2) !important;
+        }
       `}</style>
       
       <BootstrapNavbar
@@ -175,78 +244,99 @@ const Navbar = () => {
         }}
       >
         <Container fluid="lg" style={{ padding: 0 }}>
-          {/* Logo */}
-<BootstrapNavbar.Brand as={Link} to="/" className="d-flex align-items-center me-3" style={{ padding: 0 }}>
+          {/* Desktop Logo - visible on lg and up */}
+          <BootstrapNavbar.Brand 
+            as={Link} 
+            to="/" 
+            className="d-none d-lg-flex align-items-center me-3" 
+            style={{ padding: 0 }}
+          >
             <span className="text-logo">
               LOGO
             </span>
           </BootstrapNavbar.Brand>
 
-          {/* Mobile menu and cart button */}
-          <div className="d-flex align-items-center d-lg-none gap-2">
-            {/* Mobile Cart Icon */}
-            <Button
-              variant="link"
-              className="p-2 position-relative"
-              as={Link}
-              to="/cart"
-              style={{
-                color: 'white',
-                backgroundColor: 'rgba(255, 255, 255, 0.2)',
-                borderRadius: '0.5rem',
-                width: '36px',
-                height: '36px',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                border: 'none',
-                padding: 0
-              }}
-            >
-              <FiShoppingBag size={20} />
-              {cartCount > 0 && (
-                <Badge
-                  pill
-                  style={{
-                    position: 'absolute',
-                    top: '-0.25rem',
-                    right: '-0.25rem',
-                    fontSize: '0.6rem',
-                    height: '1.1rem',
-                    width: '1.1rem',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    background: 'white',
-                    color: navbarColors.primary,
-                    border: '2px solid white',
-                    fontWeight: 'bold'
-                  }}
-                >
-                  {cartCount}
-                </Badge>
-              )}
-            </Button>
+          {/* Mobile Layout */}
+          <div className="d-lg-none w-100 mobile-nav-container">
+            {/* Left - Menu */}
+            <div className="mobile-left">
+              <Button
+                variant="link"
+                className="p-2 mobile-menu-btn"
+                onClick={() => setShowSidebar(true)}
+                style={{
+                  color: 'white',
+                  backgroundColor: 'rgba(255, 255, 255, 0.2)',
+                  borderRadius: '0.5rem',
+                  width: '40px',
+                  height: '40px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  border: 'none',
+                  padding: 0,
+                  margin: 0
+                }}
+              >
+                <FiMenu size={20} />
+              </Button>
+            </div>
 
-            <Button
-              variant="link"
-              className="p-2"
-              onClick={() => setShowSidebar(true)}
-              style={{
-                color: 'white',
-                backgroundColor: 'rgba(255, 255, 255, 0.2)',
-                borderRadius: '0.5rem',
-                width: '36px',
-                height: '36px',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                border: 'none',
-                padding: 0
-              }}
-            >
-              <FiMenu size={20} />
-            </Button>
+            {/* Center - Logo */}
+            <div className="mobile-center">
+              <Link to="/" style={{ textDecoration: 'none' }}>
+                <span className="text-logo" style={{ fontSize: '1.8rem' }}>
+                  LOGO
+                </span>
+              </Link>
+            </div>
+
+            {/* Right - Cart */}
+            <div className="mobile-right">
+              <Button
+                variant="link"
+                className="p-2 position-relative mobile-cart-btn"
+                as={Link}
+                to="/cart"
+                style={{
+                  color: 'white',
+                  backgroundColor: 'rgba(255, 255, 255, 0.2)',
+                  borderRadius: '0.5rem',
+                  width: '40px',
+                  height: '40px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  border: 'none',
+                  padding: 0,
+                  margin: 0
+                }}
+              >
+                <FiShoppingBag size={20} />
+                {cartCount > 0 && (
+                  <Badge
+                    pill
+                    style={{
+                      position: 'absolute',
+                      top: '-0.25rem',
+                      right: '-0.25rem',
+                      fontSize: '0.6rem',
+                      height: '1.1rem',
+                      width: '1.1rem',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      background: 'white',
+                      color: navbarColors.primary,
+                      border: '2px solid white',
+                      fontWeight: 'bold'
+                    }}
+                  >
+                    {cartCount}
+                  </Badge>
+                )}
+              </Button>
+            </div>
           </div>
 
           {/* Desktop Navigation */}
@@ -424,8 +514,8 @@ const Navbar = () => {
               ))}
             </Nav>
 
-            {/* Search Bar - Fixed with white background and proper pill shape */}
-            <div className="d-flex align-items-center mx-2" style={{ minWidth: '260px' }}>
+            {/* Search Bar - Always visible on desktop */}
+            <div className="d-none d-lg-flex align-items-center mx-2" style={{ minWidth: '260px' }}>
               <Form onSubmit={handleSearch} className="w-100">
                 <div style={{
                   display: 'flex',
@@ -481,8 +571,8 @@ const Navbar = () => {
               </Form>
             </div>
 
-            {/* Right side icons */}
-            <div className="d-flex align-items-center gap-1">
+            {/* Desktop Right side icons */}
+            <div className="d-none d-lg-flex align-items-center gap-1">
               <Button
                 variant="link"
                 className="p-2"
@@ -569,25 +659,29 @@ const Navbar = () => {
           </BootstrapNavbar.Collapse>
         </Container>
 
-        {/* Mobile Sidebar */}
+        {/* Mobile Sidebar - Opens from right */}
         <Offcanvas
           show={showSidebar}
           onHide={() => setShowSidebar(false)}
-          placement="end"
-          style={{ width: '280px' }}
+          placement="start"
+          style={{ 
+            width: '280px',
+            background: navbarColors.background
+          }}
         >
           <Offcanvas.Header
             closeButton
             style={{
               background: navbarColors.background,
-              borderBottom: `1px solid ${navbarColors.border}`
+              borderBottom: `1px solid rgba(255, 255, 255, 0.2)`,
+              color: 'white'
             }}
           >
-            <Offcanvas.Title style={{ color: navbarColors.text, fontWeight: 600 }}>
+            <Offcanvas.Title style={{ color: 'white', fontWeight: 600 }}>
               Menu
             </Offcanvas.Title>
           </Offcanvas.Header>
-          <Offcanvas.Body style={{ padding: '1rem' }}>
+          <Offcanvas.Body style={{ padding: '1rem', background: navbarColors.background }}>
             <Nav className="flex-column">
               {/* First three links - Home, New Arrivals, Catalog */}
               {navLinks.slice(0, 3).map((link) => (
@@ -602,8 +696,8 @@ const Navbar = () => {
                     borderRadius: '0.5rem',
                     fontWeight: 500,
                     fontSize: '1rem',
-                    color: location.pathname === link.path ? navbarColors.primary : navbarColors.text,
-                    backgroundColor: location.pathname === link.path ? '#fff5f6' : 'transparent',
+                    color: location.pathname === link.path ? navbarColors.primary : 'white',
+                    backgroundColor: location.pathname === link.path ? 'rgba(255, 255, 255, 0.15)' : 'transparent',
                     marginBottom: '0.25rem',
                     textDecoration: 'none',
                     transition: 'all 0.2s ease'
@@ -611,18 +705,18 @@ const Navbar = () => {
                   onClick={() => setShowSidebar(false)}
                   onMouseEnter={(e) => {
                     if (location.pathname !== link.path) {
-                      e.currentTarget.style.backgroundColor = '#F9F9F9';
+                      e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.1)';
                       e.currentTarget.style.color = navbarColors.primary;
                     }
                   }}
                   onMouseLeave={(e) => {
                     if (location.pathname !== link.path) {
                       e.currentTarget.style.backgroundColor = 'transparent';
-                      e.currentTarget.style.color = navbarColors.text;
+                      e.currentTarget.style.color = 'white';
                     }
                   }}
                 >
-                  <span className="me-3" style={{ color: location.pathname === link.path ? navbarColors.primary : '#9CA3AF' }}>
+                  <span className="me-3" style={{ color: location.pathname === link.path ? navbarColors.primary : 'rgba(255,255,255,0.7)' }}>
                     {link.icon}
                   </span>
                   {link.name}
@@ -641,20 +735,20 @@ const Navbar = () => {
                     borderRadius: '0.5rem',
                     fontWeight: 500,
                     fontSize: '1rem',
-                    color: navbarColors.text,
-                    backgroundColor: mobileCategoriesOpen ? '#F9F9F9' : 'transparent',
+                    color: 'white',
+                    backgroundColor: mobileCategoriesOpen ? 'rgba(255, 255, 255, 0.1)' : 'transparent',
                     marginBottom: '0.25rem',
                     cursor: 'pointer',
                     transition: 'all 0.2s ease'
                   }}
                 >
                   <span style={{ display: 'flex', alignItems: 'center' }}>
-                    <span className="me-3" style={{ color: '#9CA3AF' }}>
+                    <span className="me-3" style={{ color: 'rgba(255,255,255,0.7)' }}>
                       <FiGrid size={18} />
                     </span>
                     Categories
                   </span>
-                  {mobileCategoriesOpen ? <FiChevronUp size={16} /> : <FiChevronDown size={16} />}
+                  {mobileCategoriesOpen ? <FiChevronUp size={16} style={{ color: 'white' }} /> : <FiChevronDown size={16} style={{ color: 'white' }} />}
                 </div>
 
                 {/* Mobile Categories Dropdown - Shows all categories when clicked */}
@@ -663,7 +757,7 @@ const Navbar = () => {
                     marginLeft: '2.5rem',
                     marginBottom: '0.5rem',
                     padding: '0.5rem 0',
-                    borderLeft: `2px solid ${navbarColors.light}`,
+                    borderLeft: `2px solid rgba(255, 255, 255, 0.2)`,
                     paddingLeft: '0.5rem'
                   }}>
                     <div
@@ -672,13 +766,19 @@ const Navbar = () => {
                         padding: '0.6rem 0.8rem',
                         borderRadius: '0.5rem',
                         fontSize: '0.95rem',
-                        color: navbarColors.text,
+                        color: 'white',
                         cursor: 'pointer',
                         transition: 'all 0.2s ease',
                         marginBottom: '0.25rem'
                       }}
-                      onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#F9F9F9'}
-                      onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
+                      onMouseEnter={(e) => {
+                        e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.1)';
+                        e.currentTarget.style.color = navbarColors.primary;
+                      }}
+                      onMouseLeave={(e) => {
+                        e.currentTarget.style.backgroundColor = 'transparent';
+                        e.currentTarget.style.color = 'white';
+                      }}
                     >
                       All Categories
                     </div>
@@ -691,13 +791,19 @@ const Navbar = () => {
                           padding: '0.6rem 0.8rem',
                           borderRadius: '0.5rem',
                           fontSize: '0.95rem',
-                          color: navbarColors.text,
+                          color: 'white',
                           cursor: 'pointer',
                           transition: 'all 0.2s ease',
                           marginBottom: '0.25rem'
                         }}
-                        onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#F9F9F9'}
-                        onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
+                        onMouseEnter={(e) => {
+                          e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.1)';
+                          e.currentTarget.style.color = navbarColors.primary;
+                        }}
+                        onMouseLeave={(e) => {
+                          e.currentTarget.style.backgroundColor = 'transparent';
+                          e.currentTarget.style.color = 'white';
+                        }}
                       >
                         {cat.name}
                       </div>
@@ -719,8 +825,8 @@ const Navbar = () => {
                     borderRadius: '0.5rem',
                     fontWeight: 500,
                     fontSize: '1rem',
-                    color: location.pathname === link.path ? navbarColors.primary : navbarColors.text,
-                    backgroundColor: location.pathname === link.path ? '#fff5f6' : 'transparent',
+                    color: location.pathname === link.path ? navbarColors.primary : 'white',
+                    backgroundColor: location.pathname === link.path ? 'rgba(255, 255, 255, 0.15)' : 'transparent',
                     marginBottom: '0.25rem',
                     textDecoration: 'none',
                     transition: 'all 0.2s ease'
@@ -728,25 +834,25 @@ const Navbar = () => {
                   onClick={() => setShowSidebar(false)}
                   onMouseEnter={(e) => {
                     if (location.pathname !== link.path) {
-                      e.currentTarget.style.backgroundColor = '#F9F9F9';
+                      e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.1)';
                       e.currentTarget.style.color = navbarColors.primary;
                     }
                   }}
                   onMouseLeave={(e) => {
                     if (location.pathname !== link.path) {
                       e.currentTarget.style.backgroundColor = 'transparent';
-                      e.currentTarget.style.color = navbarColors.text;
+                      e.currentTarget.style.color = 'white';
                     }
                   }}
                 >
-                  <span className="me-3" style={{ color: location.pathname === link.path ? navbarColors.primary : '#9CA3AF' }}>
+                  <span className="me-3" style={{ color: location.pathname === link.path ? navbarColors.primary : 'rgba(255,255,255,0.7)' }}>
                     {link.icon}
                   </span>
                   {link.name}
                 </Nav.Link>
               ))}
 
-              <div className="mt-3 pt-2 border-top" style={{ borderColor: navbarColors.border }}>
+              <div className="mt-3 pt-2 border-top" style={{ borderColor: 'rgba(255, 255, 255, 0.2)' }}>
                 <Nav.Link
                   as={Link}
                   to={isLoggedIn ? undefined : '/login'}
@@ -763,19 +869,19 @@ const Navbar = () => {
                     borderRadius: '0.5rem',
                     fontWeight: 500,
                     fontSize: '1rem',
-                    color: navbarColors.text,
+                    color: 'white',
                     textDecoration: 'none'
                   }}
                   onMouseEnter={(e) => {
-                    e.currentTarget.style.backgroundColor = '#F9F9F9';
+                    e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.1)';
                     e.currentTarget.style.color = navbarColors.primary;
                   }}
                   onMouseLeave={(e) => {
                     e.currentTarget.style.backgroundColor = 'transparent';
-                    e.currentTarget.style.color = navbarColors.text;
+                    e.currentTarget.style.color = 'white';
                   }}
                 >
-                  <span className="me-3" style={{ color: '#9CA3AF' }}>
+                  <span className="me-3" style={{ color: 'rgba(255,255,255,0.7)' }}>
                     {isLoggedIn ? <FiLogOut size={18} /> : <FiUser size={18} />}
                   </span>
                   {isLoggedIn ? 'Logout' : 'Login'}

@@ -17,14 +17,14 @@ import '../App.css';
 
 // Navbar color palette
 const logoColors = {
-  primary: '#fe7e8b', // Navbar primary color
-  secondary: '#e65c70', // Navbar secondary color
-  light: '#ffd1d4', // Navbar light color
-  dark: '#d64555', // Navbar dark color
-  background: '#fff5f6', // Super light - almost white
-  lighterBg: '#fff9fa', // Even lighter - subtle tint
-  gradient: 'linear-gradient(135deg, #fe7e8b 0%, #e65c70 100%)', // Navbar gradient
-  softGradient: 'linear-gradient(135deg, #fff5f6 0%, #ffd1d4 100%)', // Very soft gradient
+  primary: '#fe7e8b',
+  secondary: '#e65c70',
+  light: '#ffd1d4',
+  dark: '#d64555',
+  background: '#fff5f6',
+  lighterBg: '#fff9fa',
+  gradient: 'linear-gradient(135deg, #fe7e8b 0%, #e65c70 100%)',
+  softGradient: 'linear-gradient(135deg, #fff5f6 0%, #ffd1d4 100%)',
 };
 
 export default function Catalog() {
@@ -110,7 +110,6 @@ export default function Catalog() {
         filtered.sort((a, b) => b.createdAt - a.createdAt);
         break;
       default:
-        // Default sorting
         break;
     }
 
@@ -137,32 +136,44 @@ export default function Catalog() {
   };
 
   const renderProductCard = (product) => (
-    <Col key={product._id || product.id}>
-      <Card className="product-card h-100 border-0" style={{
-        background: 'white',
-        borderRadius: '12px',
-        overflow: 'hidden',
-        transition: 'all 0.3s ease',
-        boxShadow: '0 4px 12px rgba(0,0,0,0.05)',
-        cursor: 'pointer'
-      }}
+    <Col key={product._id || product.id} xs={6} md={4} lg={3} className="mb-3 mb-md-4">
+      <Card 
+        className="product-card h-100 border-0"
+        onClick={() => navigate(`/catalog/${product.slug}`)}
+        style={{
+          background: 'white',
+          borderRadius: '8px',
+          overflow: 'hidden',
+          transition: 'all 0.2s ease',
+          boxShadow: '0 2px 8px rgba(0,0,0,0.04)',
+          cursor: 'pointer',
+          height: '100%',
+          position: 'relative'
+        }}
         onMouseEnter={(e) => {
-          e.currentTarget.style.transform = 'translateY(-5px)';
-          e.currentTarget.style.boxShadow = `0 8px 20px ${logoColors.primary}30`;
+          e.currentTarget.style.transform = 'translateY(-4px)';
+          e.currentTarget.style.boxShadow = `0 8px 16px ${logoColors.primary}20`;
         }}
         onMouseLeave={(e) => {
           e.currentTarget.style.transform = 'translateY(0)';
-          e.currentTarget.style.boxShadow = '0 4px 12px rgba(0,0,0,0.05)';
+          e.currentTarget.style.boxShadow = '0 2px 8px rgba(0,0,0,0.04)';
+        }}
+      >
+        <div className="product-image-container" style={{ 
+          position: 'relative',
+          width: '100%',
+          aspectRatio: '3/4',
+          overflow: 'hidden',
+          backgroundColor: '#f8f9fa'
         }}>
-        <div className="product-image-container" style={{ position: 'relative' }}>
           <Card.Img
-            onClick={() => navigate(`/catalog/${product.slug}`)}
             variant="top"
             src={getProductImage(product)}
             alt={product.name}
             className="product-img"
             style={{
-              height: '250px',
+              width: '100%',
+              height: '100%',
               objectFit: 'cover',
               transition: 'transform 0.3s ease'
             }}
@@ -176,138 +187,183 @@ export default function Catalog() {
               e.target.src = '/placeholder.jpg';
             }}
           />
+          
+          {/* Discount Badge - Positioned at top left */}
           {product.discountedPrice < product.originalPrice && (
             <div style={{
               position: 'absolute',
-              top: '10px',
-              left: '10px',
+              top: '8px',
+              left: '8px',
               background: logoColors.gradient,
               color: 'white',
               padding: '4px 8px',
               borderRadius: '4px',
-              fontSize: '0.75rem',
-              fontWeight: 'bold',
-              zIndex: 1
+              fontSize: '0.7rem',
+              fontWeight: '600',
+              zIndex: 2,
+              boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
             }}>
               {Math.round(100 - (product.discountedPrice / product.originalPrice) * 100)}% OFF
             </div>
           )}
-          <Badge
-            bg={product.stock > 0 ? "success" : "danger"}
+
+          {/* Quick Add Button - Hidden on mobile, visible on hover on desktop */}
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              handleAddToCart(product);
+            }}
+            className="d-none d-md-block"
+            disabled={product.stock <= 0}
             style={{
               position: 'absolute',
-              top: '10px',
-              right: '10px',
-              padding: '4px 8px',
-              fontSize: '0.7rem',
-              zIndex: 1,
-              background: product.stock > 0 ? logoColors.primary : '#dc3545',
-              border: 'none'
+              bottom: '10px',
+              left: '50%',
+              transform: 'translateX(-50%)',
+              background: 'white',
+              border: `1px solid ${logoColors.primary}`,
+              color: logoColors.primary,
+              padding: '6px 12px',
+              borderRadius: '30px',
+              fontSize: '0.8rem',
+              fontWeight: '500',
+              cursor: product.stock > 0 ? 'pointer' : 'not-allowed',
+              opacity: 0,
+              transition: 'opacity 0.2s ease',
+              whiteSpace: 'nowrap',
+              boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
+              zIndex: 3
+            }}
+            onMouseEnter={(e) => {
+              if (product.stock > 0) {
+                e.target.style.background = logoColors.primary;
+                e.target.style.color = 'white';
+              }
+            }}
+            onMouseLeave={(e) => {
+              if (product.stock > 0) {
+                e.target.style.background = 'white';
+                e.target.style.color = logoColors.primary;
+              }
             }}
           >
-            {product.stock > 0 ? 'In Stock' : 'Out of Stock'}
-          </Badge>
+            <FaShoppingCart className="me-1" size={12} />
+            Quick Add
+          </button>
+
+          <style>{`
+            .product-card:hover .d-md-block {
+              opacity: 1 !important;
+            }
+          `}</style>
         </div>
-        <Card.Body className="d-flex flex-column" style={{ padding: '1rem' }}>
-          <Card.Title
+
+        <Card.Body className="d-flex flex-column" style={{ padding: '0.75rem' }}>
+          {/* Product Title */}
+          <Card.Title 
             className="product-title"
-            onClick={() => navigate(`/catalog/${product.slug}`)}
             style={{
-              fontSize: '1rem',
-              fontWeight: '600',
+              fontSize: '0.9rem',
+              fontWeight: '500',
               color: '#2D3748',
               marginBottom: '0.25rem',
-              cursor: 'pointer'
+              lineHeight: '1.4',
+              display: '-webkit-box',
+              WebkitLineClamp: 2,
+              WebkitBoxOrient: 'vertical',
+              overflow: 'hidden',
+              textOverflow: 'ellipsis',
+              minHeight: '2.5rem'
             }}
           >
             {product.name}
           </Card.Title>
-          <Card.Text className="text-muted product-category" style={{
-            fontSize: '0.85rem',
-            marginBottom: '0.5rem'
+
+          {/* Category - Hidden on mobile to save space */}
+          <Card.Text className="d-none d-md-block text-muted product-category" style={{
+            fontSize: '0.75rem',
+            marginBottom: '0.5rem',
+            textTransform: 'uppercase',
+            letterSpacing: '0.5px'
           }}>
             {typeof product.category === 'object' ? product.category.name : (product.category || 'Uncategorized')}
           </Card.Text>
-          <div className="mt-auto">
-            <div className="d-flex justify-content-between align-items-center mb-2">
-              <div className="price">
-                {product.discountedPrice < product.originalPrice && (
-                  <span className="original-price text-muted text-decoration-line-through me-2" style={{ fontSize: '0.8rem' }}>
-                    Rs. {product.originalPrice}
-                  </span>
-                )}
-                <span className="current-price fw-bold" style={{ color: logoColors.primary, fontSize: '1.1rem' }}>
-                  Rs. {product.discountedPrice || product.price}
+
+          {/* Price - Now on its own row */}
+          <div className="price-wrapper mb-1">
+            <div className="price d-flex align-items-center">
+              {product.discountedPrice < product.originalPrice && (
+                <span className="original-price text-muted text-decoration-line-through me-2" style={{ fontSize: '0.7rem' }}>
+                  Rs. {product.originalPrice?.toLocaleString()}
                 </span>
-              </div>
-              <div className="rating" style={{ fontSize: '0.85rem' }}>
-                {product.reviewCount > 0 ? (
-                  <>
-                    <FaStar style={{ color: logoColors.primary }} />
-                    <span className="ms-1" style={{ color: '#4A5568' }}>{product.rating.toFixed(1)}</span>
-                    <small className="text-muted ms-1" style={{ color: '#718096' }}>({product.reviewCount})</small>
-                  </>
-                ) : (
-                  <small className="text-muted" style={{ color: '#718096' }}>No reviews yet</small>
-                )}
-              </div>
-            </div>
-            <button
-              className={`add-to-cart-btn w-100 mt-2 ${product.stock <= 0 ? 'disabled' : ''}`}
-              onClick={() => handleAddToCart(product)}
-              disabled={product.stock <= 0}
-              style={{
-                background: product.stock > 0 ? logoColors.gradient : '#e2e8f0',
-                color: product.stock > 0 ? 'white' : '#718096',
-                border: 'none',
-                padding: '0.6rem',
-                borderRadius: '8px',
-                fontSize: '0.9rem',
-                fontWeight: '500',
-                cursor: product.stock > 0 ? 'pointer' : 'not-allowed',
-                transition: 'all 0.3s ease'
-              }}
-              onMouseEnter={(e) => {
-                if (product.stock > 0) {
-                  e.target.style.opacity = '0.9';
-                  e.target.style.transform = 'translateY(-2px)';
-                  e.target.style.boxShadow = `0 4px 12px ${logoColors.primary}40`;
-                }
-              }}
-              onMouseLeave={(e) => {
-                if (product.stock > 0) {
-                  e.target.style.opacity = '1';
-                  e.target.style.transform = 'translateY(0)';
-                  e.target.style.boxShadow = 'none';
-                }
-              }}
-            >
-              {product.stock > 0 ? (
-                <>
-                  <FaShoppingCart className="me-2" />
-                  Add to Cart
-                </>
-              ) : (
-                <>
-                  <FaBoxOpen className="me-2" />
-                  Out of Stock
-                </>
               )}
-            </button>
+              <span className="current-price fw-bold" style={{ color: logoColors.primary, fontSize: '0.95rem' }}>
+                Rs. {product.discountedPrice || product.price?.toLocaleString()}
+              </span>
+            </div>
           </div>
+
+          {/* Rating - Now below price */}
+          <div className="rating-wrapper mb-2">
+            <div className="rating d-flex align-items-center" style={{ fontSize: '0.7rem' }}>
+              <FaStar style={{ color: logoColors.primary, fontSize: '0.7rem' }} />
+              <span className="ms-1" style={{ color: '#4A5568' }}>{product.rating.toFixed(1)}</span>
+              {product.reviewCount > 0 && (
+                <small className="text-muted ms-1" style={{ color: '#718096' }}>({product.reviewCount})</small>
+              )}
+            </div>
+          </div>
+
+          {/* Mobile Add to Cart Button - Visible only on mobile */}
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              handleAddToCart(product);
+            }}
+            className="d-md-none w-100"
+            disabled={product.stock <= 0}
+            style={{
+              background: product.stock > 0 ? logoColors.gradient : '#e2e8f0',
+              color: product.stock > 0 ? 'white' : '#718096',
+              border: 'none',
+              padding: '8px 0',
+              borderRadius: '6px',
+              fontSize: '0.8rem',
+              fontWeight: '500',
+              cursor: product.stock > 0 ? 'pointer' : 'not-allowed',
+              transition: 'all 0.2s ease',
+              marginTop: '0.25rem'
+            }}
+          >
+            {product.stock > 0 ? (
+              <>
+                <FaShoppingCart className="me-2" size={12} />
+                Add
+              </>
+            ) : (
+              <>
+                <FaBoxOpen className="me-2" size={12} />
+                Out of Stock
+              </>
+            )}
+          </button>
         </Card.Body>
       </Card>
     </Col>
   );
 
   return (
-    <Container fluid className="tshirt-products-page py-3 py-md-5" style={{
+    <Container fluid className="catalog-page py-3 py-md-5" style={{
       background: logoColors.background,
       minHeight: '100vh'
     }}>
       <Container>
-        <div className="page-header-wrapper mb-4 mb-md-5 text-center">
-          <h1 className="page-header" style={{ color: logoColors.dark }}>
+        <div className="page-header-wrapper mb-3 mb-md-5 text-center">
+          <h1 className="page-header" style={{ 
+            color: logoColors.dark,
+            fontSize: 'clamp(1.5rem, 5vw, 2.5rem)',
+            fontWeight: '600'
+          }}>
             Our Products
           </h1>
 
@@ -315,8 +371,8 @@ export default function Catalog() {
           <div style={{
             height: '2px',
             background: `linear-gradient(90deg, transparent, ${logoColors.primary}40, transparent)`,
-            width: '150px',
-            margin: '1rem auto 2rem auto'
+            width: 'clamp(80px, 20vw, 150px)',
+            margin: '0.5rem auto 1.5rem auto'
           }} />
         </div>
 
@@ -337,22 +393,40 @@ export default function Catalog() {
           <Alert variant="danger" className="text-center">
             {error}
           </Alert>
+        ) : filteredProducts.length === 0 ? (
+          <div className="text-center my-5 py-5">
+            <div style={{
+              width: '80px',
+              height: '80px',
+              borderRadius: '50%',
+              background: logoColors.softGradient,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              margin: '0 auto 1.5rem'
+            }}>
+              <FaBoxOpen size={32} style={{ color: logoColors.primary }} />
+            </div>
+            <h4 style={{ color: logoColors.dark, marginBottom: '0.5rem' }}>
+              No Products Found
+            </h4>
+            <p style={{ color: '#718096', fontSize: '1rem', maxWidth: '400px', margin: '0 auto' }}>
+              Try adjusting your filters or check back later for new products.
+            </p>
+          </div>
         ) : (
-          <>
-            {/* Mobile view - show 2 products per row */}
-            <div className="d-block d-md-none">
-              <Row xs={2} className="g-3">
-                {filteredProducts.map(product => renderProductCard(product))}
-              </Row>
-            </div>
+          <Row className="g-2 g-md-4">
+            {filteredProducts.map(product => renderProductCard(product))}
+          </Row>
+        )}
 
-            {/* Tablet/Desktop view - show responsive columns */}
-            <div className="d-none d-md-block">
-              <Row xs={1} sm={2} md={3} lg={4} className="g-4">
-                {filteredProducts.map(product => renderProductCard(product))}
-              </Row>
-            </div>
-          </>
+        {/* Product count */}
+        {filteredProducts.length > 0 && (
+          <div className="text-center mt-4">
+            <p style={{ color: '#718096', fontSize: '0.85rem' }}>
+              Showing {filteredProducts.length} product{filteredProducts.length !== 1 ? 's' : ''}
+            </p>
+          </div>
         )}
       </Container>
     </Container>

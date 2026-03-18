@@ -1,35 +1,21 @@
-# NAVBAR LOGO → TEXT EDIT PLAN
+# Hero Slides Desktop/Mobile Images Update - Approved Plan
 
-## Information Gathered
-**frontend/src/components/Navbar.js**:
-- Current: `<Image src={logo} alt="Zedify" height="40px" width="auto" maxWidth="140px" />`
-- Import: `import logo from '../images/logo.png';`
-- Brand: Link to "/" 
+## Progress Tracker
 
-## Plan
-**frontend/src/components/Navbar.js**:
-1. Remove `import logo from '../images/logo.png';`
-2. Replace Image with styled `<span className="text-logo">LOGO</span>`
-3. Add CSS: Gradient, bold, responsive sizing matching image (40px height)
+✅ **Done** | ⏳ **In Progress** | ⬜ **Todo**
 
-```
-.text-logo {
-  font-size: clamp(1.5rem, 4vw, 2rem);
-  font-weight: 900;
-  background: linear-gradient(135deg, #fe7e8b 0%, #e65c70 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-  letter-spacing: 2px;
-  font-family: 'Arial Black', sans-serif;
-}
-```
+**Backend Updates:**
+✅ [1] Update HeroSlide model: Add desktopImage/mobileImage fields
+✅ [2] Update heroRoutes.js: Handle dual image uploads with multer.fields()
 
-Keep all responsive/mobile behavior.
+**Frontend Updates:**
+✅ [3] Update HeroManagement.js: Add two upload fields, previews, rec sizes (Desktop 1920x800, Mobile 390x500)
+✅ [4] Update HeroSlider.js: Responsive image selection (mobileImage on <=768px)
+- ⬜ [5] Update heroSlider.css: Responsive enhancements
 
-## Followup Steps
-1. ✅ Edit confirmed
-2. Test navbar
-3. Complete
+**Testing & Followup:**
+- ⬜ [6] Test uploads, display on desktop/mobile
+- ⬜ [7] Restart servers, verify responsive switching
 
-Ready for implementation.
+**Notes:** Existing slides use single image → Map to desktopImage on edit.
+
