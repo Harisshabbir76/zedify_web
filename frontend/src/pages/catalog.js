@@ -139,7 +139,7 @@ export default function Catalog() {
     <Col key={product._id || product.id} xs={6} md={4} lg={3} className="mb-3 mb-md-4">
       <Card 
         className="product-card h-100 border-0"
-        onClick={() => navigate(`/catalog/${product.slug}`)}
+        onClick={() => navigate(`/catalog/${product.slug || product._id}`)}
         style={{
           background: 'white',
           borderRadius: '8px',

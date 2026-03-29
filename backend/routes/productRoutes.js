@@ -7,6 +7,16 @@ const { storage } = require('../config/cloudinary');
 
 const upload = multer({ storage: storage });
 
+function slugify(text) {
+  return text
+    .toString()
+    .toLowerCase()
+    .trim()
+    .replace(/\s+/g, '-')     // Replace spaces with -
+    .replace(/[^\w-]+/g, '')     // Remove all non-word chars
+    .replace(/--+/g, '-');      // Replace multiple - with single -
+}
+
 // POST /dashboard/add-product - Add a new product
 router.post('/dashboard/add-product', upload.array('images', 10), async (req, res) => {
   let { name, description, originalPrice, discountedPrice, category, stock, sizes, colors } = req.body;
@@ -23,6 +33,14 @@ router.post('/dashboard/add-product', upload.array('images', 10), async (req, re
       variants.colors = typeof colors === 'string' ? colors.split(',').map(c => c.trim()).filter(c => c) : colors;
     }
 
+    const baseSlug = slugify(name);
+    let uniqueSlug = baseSlug;
+    let counter = 1;
+    while (await Product.findOne({ slug: uniqueSlug })) {
+      uniqueSlug = `${baseSlug}-${counter}`;
+      counter++;
+    }
+
     const newProduct = new Product({
       name,
       description,
@@ -31,6 +49,7 @@ router.post('/dashboard/add-product', upload.array('images', 10), async (req, re
       image: imagePaths,
       category,
       stock,
+      slug: uniqueSlug,
       variants: Object.keys(variants).length > 0 ? variants : undefined
     });
 
@@ -143,9 +162,26 @@ router.get('/product/:id', async (req, res) => {
 // PUT /update/:id - Update a product
 router.put('/update/:id', async (req, res) => {
   try {
+    const updateData = { ...req.body };
+
+    // If name is being updated, regenerate the slug if it's missing or if the name changed
+    if (updateData.name) {
+      const existingProduct = await Product.findById(req.params.id);
+      if (existingProduct && (existingProduct.name !== updateData.name || !existingProduct.slug)) {
+        const baseSlug = slugify(updateData.name);
+        let uniqueSlug = baseSlug;
+        let counter = 1;
+        while (await Product.findOne({ slug: uniqueSlug, _id: { $ne: req.params.id } })) {
+          uniqueSlug = `${baseSlug}-${counter}`;
+          counter++;
+        }
+        updateData.slug = uniqueSlug;
+      }
+    }
+
     const product = await Product.findByIdAndUpdate(
       req.params.id,
-      req.body,
+      updateData,
       { new: true }
     );
     if (!product) {
