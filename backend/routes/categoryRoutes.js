@@ -17,7 +17,7 @@ router.get('/categories', async (req, res) => {
     const dbCatNames = dbCategories.map(c => c.name.toLowerCase().trim());
 
     productCategories.forEach(catName => {
-      const normalized = (catName || "").toLowerCase().trim();
+      const normalized = (catName || '').toLowerCase().trim();
       if (normalized && !dbCatNames.includes(normalized)) {
         result.push({ name: catName, image: null });
       }
@@ -86,7 +86,7 @@ router.get('/category/:categoryName', async (req, res) => {
   try {
     const products = await Product.find({
       category: { $regex: new RegExp(`^${categoryName}$`, 'i') }
-    });
+    }).sort({ createdAt: -1 });
 
     if (!products.length) {
       return res.status(404).json({ message: 'No products found in this category' });
@@ -100,4 +100,3 @@ router.get('/category/:categoryName', async (req, res) => {
 });
 
 module.exports = router;
-

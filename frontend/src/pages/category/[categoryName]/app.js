@@ -27,7 +27,7 @@ export default function CategoryProducts() {
   const [filteredProducts, setFilteredProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [sortOption, setSortOption] = useState('default');
+const [sortOption, setSortOption] = useState('newest');
 
   useEffect(() => {
     if (!categoryName) return;
