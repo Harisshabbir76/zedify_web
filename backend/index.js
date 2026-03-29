@@ -45,7 +45,8 @@ app.use(express.json());
 
 const corsOptions = {
   origin: ['http://localhost:3000',  
-            'https://zedify-web.vercel.app'
+            'https://zedify-web.vercel.app',
+            'https://www.zedify.store/'
     
   ],
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
