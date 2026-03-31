@@ -3,6 +3,7 @@ import { Routes, Route, Navigate, useLocation, useNavigate } from "react-router-
 import { useEffect, useState } from "react";
 import axios from "axios";
 import Layout from "./components/Layout";
+import { Toaster } from "react-hot-toast";
 
 // Import your pages
 import Home from "./pages/Home";
@@ -138,6 +139,7 @@ function App() {
     <>
       <ScrollToTop />
       <DynamicTitle />
+      <Toaster position="top-center" />
       <Layout>
         <Routes>
           <Route path="/" element={<Home />} />

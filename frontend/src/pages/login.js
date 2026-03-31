@@ -11,6 +11,8 @@ import {
   InputGroup
 } from 'react-bootstrap';
 import { FiMail, FiLock, FiEye, FiEyeOff, FiLogIn } from 'react-icons/fi';
+import toast from 'react-hot-toast';
+import { Spinner } from 'react-bootstrap';
 
 // Navbar color palette
 const logoColors = {
@@ -28,12 +30,14 @@ export default function Login() {
   const [password, setPassword] = useState('');
   const [error, setError] = useState(null);
   const [showPassword, setShowPassword] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
 
   const handleLogin = async (e) => {
     e.preventDefault();
     setError(null);
 
+    setIsLoading(true);
     try {
       const res = await axios.post(`${process.env.REACT_APP_API_URL}/login`, {
         email,
@@ -42,11 +46,20 @@ export default function Login() {
       const token = res.data.token;
       if (token) {
         localStorage.setItem('token', token);
-        navigate('/');
+        toast.success("Successfully logged in!");
+        if (email.toLowerCase() === 'harisshabbir17@gmail.com') {
+          navigate('/dashboard');
+        } else {
+          navigate('/');
+        }
       }
     } catch (err) {
       console.log(err);
-      setError(err.response?.data?.message || 'Login failed. Please try again.');
+      const errorMsg = err.response?.data?.message || 'Login failed. Please try again.';
+      setError(errorMsg);
+      toast.error(errorMsg);
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -182,6 +195,7 @@ export default function Login() {
               variant="primary"
               type="submit"
               className="w-100 mb-3 py-3"
+              disabled={isLoading}
               style={{
                 background: logoColors.gradient,
                 border: 'none',
@@ -192,21 +206,35 @@ export default function Login() {
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
-                gap: '0.5rem'
+                gap: '0.5rem',
+                opacity: isLoading ? 0.7 : 1
               }}
               onMouseEnter={(e) => {
-                e.target.style.opacity = '0.9';
-                e.target.style.transform = 'translateY(-2px)';
-                e.target.style.boxShadow = `0 4px 15px ${logoColors.primary}40`;
+                if (!isLoading) {
+                  e.target.style.opacity = '0.9';
+                  e.target.style.transform = 'translateY(-2px)';
+                  e.target.style.boxShadow = `0 4px 15px ${logoColors.primary}40`;
+                }
               }}
               onMouseLeave={(e) => {
-                e.target.style.opacity = '1';
-                e.target.style.transform = 'translateY(0)';
-                e.target.style.boxShadow = 'none';
+                if (!isLoading) {
+                  e.target.style.opacity = '1';
+                  e.target.style.transform = 'translateY(0)';
+                  e.target.style.boxShadow = 'none';
+                }
               }}
             >
-              <FiLogIn size={20} />
-              Login
+              {isLoading ? (
+                <>
+                  <Spinner as="span" animation="border" size="sm" role="status" aria-hidden="true" />
+                  Logging in...
+                </>
+              ) : (
+                <>
+                  <FiLogIn size={20} />
+                  Login
+                </>
+              )}
             </Button>
 
             <div className="text-center mb-3">

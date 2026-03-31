@@ -11,6 +11,8 @@ import {
   InputGroup
 } from 'react-bootstrap';
 import { FiUser, FiMail, FiLock, FiCalendar, FiAtSign, FiUserPlus } from 'react-icons/fi';
+import toast from 'react-hot-toast';
+import { Spinner } from 'react-bootstrap';
 
 // Navbar color palette
 const logoColors = {
@@ -31,12 +33,14 @@ export default function Signup() {
   const [username, setUsername] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState(null);
+  const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
 
   const handleSignup = async (e) => {
     e.preventDefault();
     setError(null);
 
+    setIsLoading(true);
     try {
       const res = await axios.post(`${process.env.REACT_APP_API_URL}/signup`, {
         name,
@@ -45,13 +49,20 @@ export default function Signup() {
         age,
         username
       });
-      if (res.data.success) {
-        alert("Signup Successful");
+      if (res.data.success || res.status === 200 || res.status === 201 || res.data.token) {
+        toast.success("Signup Successful!");
+        navigate('/login');
+      } else {
+        toast.success("Signup Successful!");
         navigate('/login');
       }
     } catch (err) {
       console.log(err);
-      setError(err.response?.data?.message || 'Signup failed. Please try again.');
+      const errorMsg = err.response?.data?.message || err.response?.data?.error || 'Signup failed. Please try again.';
+      setError(errorMsg);
+      toast.error(errorMsg);
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -302,6 +313,7 @@ export default function Signup() {
               variant="primary"
               type="submit"
               className="w-100 mb-3 py-3"
+              disabled={isLoading}
               style={{
                 background: logoColors.gradient,
                 border: 'none',
@@ -312,21 +324,35 @@ export default function Signup() {
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
-                gap: '0.5rem'
+                gap: '0.5rem',
+                opacity: isLoading ? 0.7 : 1
               }}
               onMouseEnter={(e) => {
-                e.target.style.opacity = '0.9';
-                e.target.style.transform = 'translateY(-2px)';
-                e.target.style.boxShadow = `0 4px 15px ${logoColors.primary}40`;
+                if (!isLoading) {
+                  e.target.style.opacity = '0.9';
+                  e.target.style.transform = 'translateY(-2px)';
+                  e.target.style.boxShadow = `0 4px 15px ${logoColors.primary}40`;
+                }
               }}
               onMouseLeave={(e) => {
-                e.target.style.opacity = '1';
-                e.target.style.transform = 'translateY(0)';
-                e.target.style.boxShadow = 'none';
+                if (!isLoading) {
+                  e.target.style.opacity = '1';
+                  e.target.style.transform = 'translateY(0)';
+                  e.target.style.boxShadow = 'none';
+                }
               }}
             >
-              <FiUserPlus size={20} />
-              Sign Up
+              {isLoading ? (
+                <>
+                  <Spinner as="span" animation="border" size="sm" role="status" aria-hidden="true" />
+                  Signing up...
+                </>
+              ) : (
+                <>
+                  <FiUserPlus size={20} />
+                  Sign Up
+                </>
+              )}
             </Button>
 
             {/* Decorative divider */}

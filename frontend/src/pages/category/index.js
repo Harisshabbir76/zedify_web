@@ -1,34 +1,22 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
-import { Container, Row, Col, Card, Spinner, Alert, Button } from 'react-bootstrap';
+import { Container, Row, Col, Card, Spinner, Alert } from 'react-bootstrap';
 import { FaChevronRight } from 'react-icons/fa';
 import '../../components/heroSlider.css';
 
-import bottomImg from '../../images/bottom.jpeg';
-import poloImg from '../../images/polo.jpeg';
-import tshirtImg from '../../images/t-shirt.jpeg';
-import watchImg from '../../images/watch.jpeg';
 import BrowseImg from '../../images/browse.jpeg';
 
 // Navbar color palette
 const logoColors = {
-  primary: '#fe7e8b', // Navbar primary color
-  secondary: '#e65c70', // Navbar secondary color
-  light: '#ffd1d4', // Navbar light color
-  dark: '#d64555', // Navbar dark color
-  background: '#fff5f6', // Super light - almost white
-  lighterBg: '#fff9fa', // Even lighter - subtle tint
-  gradient: 'linear-gradient(135deg, #fe7e8b 0%, #e65c70 100%)', // Navbar gradient
-  softGradient: 'linear-gradient(135deg, #fff5f6 0%, #ffd1d4 100%)', // Very soft gradient
-};
-
-const categoryImages = {
-  'bottom': bottomImg,
-  'polo': poloImg,
-  't-shirt': tshirtImg,
-  't shirt': tshirtImg,
-  'watch': watchImg
+  primary: '#fe7e8b',
+  secondary: '#e65c70',
+  light: '#ffd1d4',
+  dark: '#d64555',
+  background: '#fff5f6',
+  lighterBg: '#fff9fa',
+  gradient: 'linear-gradient(135deg, #fe7e8b 0%, #e65c70 100%)',
+  softGradient: 'linear-gradient(135deg, #fff5f6 0%, #ffd1d4 100%)',
 };
 
 export default function Category() {
@@ -71,15 +59,30 @@ export default function Category() {
     fetchCategories();
   }, []);
 
-  const getCategoryImage = (category) => {
-    if (!category) return BrowseImg;
+  // Function to get the full image URL from Cloudinary
+  const getCategoryImageUrl = (category) => {
+    if (!category.image) {
+      return null;
+    }
+    
+    // If it's already a full URL (starts with http), return as is
+    if (category.image.startsWith('http')) {
+      return category.image;
+    }
+    
+    // If it's a Cloudinary path, construct the full URL
+    if (category.image.includes('cloudinary')) {
+      return category.image;
+    }
+    
+    // Otherwise, prepend the API URL (assuming it's a relative path)
+    return `${process.env.REACT_APP_API_URL}${category.image.startsWith('/') ? '' : '/'}${category.image}`;
+  };
 
-    const normalizedCategory = category.toLowerCase().replace(/\s+/g, '-');
-    return (
-      categoryImages[normalizedCategory] ||
-      categoryImages[category.toLowerCase()] ||
-      BrowseImg
-    );
+  // Fallback placeholder image
+  const getPlaceholderImage = (categoryName) => {
+    // You can use a default placeholder image
+    return `https://via.placeholder.com/300x200?text=${encodeURIComponent(categoryName || 'Category')}`;
   };
 
   // Function to render category card
@@ -112,7 +115,7 @@ export default function Category() {
         <div className="product-image-container" style={{ position: 'relative' }}>
           <Card.Img
             variant="top"
-            src={isBrowseAll ? BrowseImg : (category.image ? (category.image.startsWith('http') ? category.image : `${process.env.REACT_APP_API_URL}${category.image.startsWith('/') ? '' : '/'}${category.image}`) : getCategoryImage(category.name || category))}
+            src={isBrowseAll ? BrowseImg : (getCategoryImageUrl(category) || getPlaceholderImage(category.name || category))}
             alt={isBrowseAll ? 'Browse All' : (category.name || category)}
             className="product-img"
             style={{
@@ -127,7 +130,8 @@ export default function Category() {
               e.target.style.transform = 'scale(1)';
             }}
             onError={(e) => {
-              e.target.src = getCategoryImage(category.name || category);
+              // If image fails to load, use placeholder
+              e.target.src = getPlaceholderImage(category.name || category);
             }}
           />
         </div>

@@ -27,6 +27,7 @@ import {
 import { useRef } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { CartContext } from '../components/CartContext';
+import logoImage from '../images/logo.png';
 
 const Navbar = () => {
   const [showSidebar, setShowSidebar] = useState(false);
@@ -119,7 +120,7 @@ const Navbar = () => {
       <style>{`
         /* Logo text styling */
         .text-logo {
-          font-size: clamp(1.5rem, 4vw, 2.2rem);
+          font-size: clamp(1.8rem, 5vw, 2.8rem);
           font-weight: 900;
           color: white;
           letter-spacing: 1px;
@@ -189,8 +190,8 @@ const Navbar = () => {
           
           .mobile-cart-btn,
           .mobile-menu-btn {
-            width: 40px !important;
-            height: 40px !important;
+            width: 44px !important;
+            height: 44px !important;
           }
         }
 
@@ -231,7 +232,7 @@ const Navbar = () => {
           border-color: rgba(255, 255, 255, 0.2) !important;
         }
       `}</style>
-      
+
       <BootstrapNavbar
         expand="lg"
         sticky="top"
@@ -243,16 +244,24 @@ const Navbar = () => {
           margin: 0
         }}
       >
-        <Container fluid="lg" style={{ padding: 0 }}>
+        <Container fluid="lg" className="justify-content-center" style={{ padding: 0, gap: '2rem' }}>
           {/* Desktop Logo - visible on lg and up */}
-          <BootstrapNavbar.Brand 
-            as={Link} 
-            to="/" 
-            className="d-none d-lg-flex align-items-center me-3" 
+          <BootstrapNavbar.Brand
+            as={Link}
+            to="/"
+            className="d-none d-lg-flex align-items-center m-0"
             style={{ padding: 0 }}
           >
             <span className="text-logo">
-              LOGO
+              <img 
+                src={logoImage} 
+                alt="Logo" 
+                style={{ 
+                  height: '50px',  // Increased from 50px to 70px for desktop
+                  objectFit: 'contain',
+                  transition: 'all 0.3s ease'
+                }} 
+              />
             </span>
           </BootstrapNavbar.Brand>
 
@@ -268,8 +277,8 @@ const Navbar = () => {
                   color: 'white',
                   backgroundColor: 'rgba(255, 255, 255, 0.2)',
                   borderRadius: '0.5rem',
-                  width: '40px',
-                  height: '40px',
+                  width: '44px',
+                  height: '44px',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
@@ -278,15 +287,23 @@ const Navbar = () => {
                   margin: 0
                 }}
               >
-                <FiMenu size={20} />
+                <FiMenu size={22} />
               </Button>
             </div>
 
             {/* Center - Logo */}
             <div className="mobile-center">
               <Link to="/" style={{ textDecoration: 'none' }}>
-                <span className="text-logo" style={{ fontSize: '1.8rem' }}>
-                  LOGO
+                <span className="text-logo" style={{ fontSize: 'clamp(1.8rem, 6vw, 2.5rem)' }}>
+                  <img 
+                    src={logoImage} 
+                    alt="Logo" 
+                    style={{ 
+                      height: '55px',  // Increased from 40px to 55px for mobile
+                      objectFit: 'contain',
+                      transition: 'all 0.3s ease'
+                    }} 
+                  />
                 </span>
               </Link>
             </div>
@@ -302,8 +319,8 @@ const Navbar = () => {
                   color: 'white',
                   backgroundColor: 'rgba(255, 255, 255, 0.2)',
                   borderRadius: '0.5rem',
-                  width: '40px',
-                  height: '40px',
+                  width: '44px',
+                  height: '44px',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
@@ -312,7 +329,7 @@ const Navbar = () => {
                   margin: 0
                 }}
               >
-                <FiShoppingBag size={20} />
+                <FiShoppingBag size={22} />
                 {cartCount > 0 && (
                   <Badge
                     pill
@@ -320,9 +337,9 @@ const Navbar = () => {
                       position: 'absolute',
                       top: '-0.25rem',
                       right: '-0.25rem',
-                      fontSize: '0.6rem',
-                      height: '1.1rem',
-                      width: '1.1rem',
+                      fontSize: '0.7rem',
+                      height: '1.2rem',
+                      width: '1.2rem',
                       display: 'flex',
                       alignItems: 'center',
                       justifyContent: 'center',
@@ -340,8 +357,8 @@ const Navbar = () => {
           </div>
 
           {/* Desktop Navigation */}
-          <BootstrapNavbar.Collapse id="navbar-nav">
-            <Nav className="me-auto" style={{ flexWrap: 'nowrap' }}>
+          <BootstrapNavbar.Collapse id="navbar-nav" className="flex-grow-0 justify-content-center" style={{ gap: '1rem' }}>
+            <Nav className="m-0" style={{ flexWrap: 'nowrap' }}>
               {navLinks.slice(0, 3).map((link) => (
                 <Nav.Link
                   key={link.path}
@@ -353,7 +370,7 @@ const Navbar = () => {
                     borderRadius: '2rem',
                     color: location.pathname === link.path ? navbarColors.primary : 'white',
                     fontWeight: 500,
-                    fontSize: '0.9rem',
+                    fontSize: '0.95rem',
                     padding: '0.5rem 0.8rem',
                     transition: 'all 0.2s ease',
                     backgroundColor: location.pathname === link.path ? '#fff5f6' : 'transparent',
@@ -387,7 +404,7 @@ const Navbar = () => {
                 <button
                   className="dropbtn"
                   style={{
-                    fontSize: '0.9rem',
+                    fontSize: '0.95rem',
                     border: 'none',
                     outline: 'none',
                     color: 'white',
@@ -490,7 +507,7 @@ const Navbar = () => {
                     borderRadius: '2rem',
                     color: location.pathname === link.path ? navbarColors.primary : 'white',
                     fontWeight: 500,
-                    fontSize: '0.9rem',
+                    fontSize: '0.95rem',
                     padding: '0.5rem 0.8rem',
                     transition: 'all 0.2s ease',
                     backgroundColor: location.pathname === link.path ? '#fff5f6' : 'transparent',
@@ -515,7 +532,7 @@ const Navbar = () => {
             </Nav>
 
             {/* Search Bar - Always visible on desktop */}
-            <div className="d-none d-lg-flex align-items-center mx-2" style={{ minWidth: '260px' }}>
+            <div className="d-none d-lg-flex align-items-center m-0" style={{ minWidth: '260px' }}>
               <Form onSubmit={handleSearch} className="w-100">
                 <div style={{
                   display: 'flex',
@@ -525,7 +542,7 @@ const Navbar = () => {
                   overflow: 'hidden',
                   boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
                   width: '100%',
-                  height: '38px'
+                  height: '40px'
                 }}>
                   <input
                     type="text"
@@ -536,7 +553,7 @@ const Navbar = () => {
                       flex: 1,
                       border: 'none',
                       padding: '0 1rem',
-                      fontSize: '0.85rem',
+                      fontSize: '0.9rem',
                       outline: 'none',
                       backgroundColor: 'white',
                       height: '100%'
@@ -548,8 +565,8 @@ const Navbar = () => {
                       background: 'white',
                       border: 'none',
                       color: navbarColors.primary,
-                      width: '38px',
-                      height: '38px',
+                      width: '40px',
+                      height: '40px',
                       display: 'flex',
                       alignItems: 'center',
                       justifyContent: 'center',
@@ -565,7 +582,7 @@ const Navbar = () => {
                       e.currentTarget.style.color = navbarColors.primary;
                     }}
                   >
-                    <FiSearch size={16} />
+                    <FiSearch size={18} />
                   </button>
                 </div>
               </Form>
@@ -583,8 +600,8 @@ const Navbar = () => {
                   color: navbarColors.text,
                   backgroundColor: '#F5F5F5',
                   borderRadius: '0.5rem',
-                  width: '34px',
-                  height: '34px',
+                  width: '38px',
+                  height: '38px',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
@@ -601,7 +618,7 @@ const Navbar = () => {
                   e.target.style.transform = 'scale(1)';
                 }}
               >
-                {isLoggedIn ? <FiLogOut size={16} /> : <FiUser size={16} />}
+                {isLoggedIn ? <FiLogOut size={18} /> : <FiUser size={18} />}
               </Button>
 
               <Button
@@ -613,8 +630,8 @@ const Navbar = () => {
                   color: navbarColors.text,
                   backgroundColor: '#F5F5F5',
                   borderRadius: '0.5rem',
-                  width: '34px',
-                  height: '34px',
+                  width: '38px',
+                  height: '38px',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
@@ -631,7 +648,7 @@ const Navbar = () => {
                   e.target.style.transform = 'scale(1)';
                 }}
               >
-                <FiShoppingBag size={16} />
+                <FiShoppingBag size={18} />
                 {cartCount > 0 && (
                   <Badge
                     pill
@@ -639,9 +656,9 @@ const Navbar = () => {
                       position: 'absolute',
                       top: '-0.25rem',
                       right: '-0.25rem',
-                      fontSize: '0.6rem',
-                      height: '1.1rem',
-                      width: '1.1rem',
+                      fontSize: '0.7rem',
+                      height: '1.2rem',
+                      width: '1.2rem',
                       display: 'flex',
                       alignItems: 'center',
                       justifyContent: 'center',
@@ -664,7 +681,7 @@ const Navbar = () => {
           show={showSidebar}
           onHide={() => setShowSidebar(false)}
           placement="start"
-          style={{ 
+          style={{
             width: '280px',
             background: navbarColors.background
           }}
