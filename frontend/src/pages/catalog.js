@@ -15,7 +15,6 @@ import { CartContext } from '../components/CartContext';
 import FilterComponent from '../components/Filter';
 import '../App.css';
 
-// Navbar color palette
 const logoColors = {
   primary: '#fe7e8b',
   secondary: '#e65c70',
@@ -33,10 +32,18 @@ export default function Catalog() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [sortOption, setSortOption] = useState('default');
+  const [isMobile, setIsMobile] = useState(false);
   const { addToCart } = useContext(CartContext);
   const navigate = useNavigate();
   const [selectedCategory, setSelectedCategory] = useState('');
   const [categories, setCategories] = useState([]);
+
+  useEffect(() => {
+    const checkMobile = () => setIsMobile(window.innerWidth <= 768);
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
 
   useEffect(() => {
     const fetchProducts = async () => {
@@ -128,16 +135,13 @@ export default function Catalog() {
 
   const handleAddToCart = (product) => {
     if (product.stock > 0) {
-      addToCart({
-        ...product,
-        quantity: 1
-      });
+      addToCart({ ...product, quantity: 1 });
     }
   };
 
   const renderProductCard = (product) => (
     <Col key={product._id || product.id} xs={6} md={4} lg={3} className="mb-3 mb-md-4">
-      <Card 
+      <Card
         className="product-card h-100 border-0"
         onClick={() => navigate(`/catalog/${product.slug || product._id}`)}
         style={{
@@ -159,13 +163,18 @@ export default function Catalog() {
           e.currentTarget.style.boxShadow = '0 2px 8px rgba(0,0,0,0.04)';
         }}
       >
-        <div className="product-image-container" style={{ 
-          position: 'relative',
-          width: '100%',
-          aspectRatio: '3/4',
-          overflow: 'hidden',
-          backgroundColor: '#f8f9fa'
-        }}>
+        {/* ── Image container ── */}
+        <div
+          className="product-image-container"
+          style={{
+            position: 'relative',
+            width: '100%',
+            // Square on mobile (2-col grid), portrait on desktop
+            aspectRatio: isMobile ? '1 / 1' : '3 / 4',
+            overflow: 'hidden',
+            backgroundColor: '#f8f9fa'
+          }}
+        >
           <Card.Img
             variant="top"
             src={getProductImage(product)}
@@ -177,18 +186,12 @@ export default function Catalog() {
               objectFit: 'cover',
               transition: 'transform 0.3s ease'
             }}
-            onMouseEnter={(e) => {
-              e.target.style.transform = 'scale(1.05)';
-            }}
-            onMouseLeave={(e) => {
-              e.target.style.transform = 'scale(1)';
-            }}
-            onError={(e) => {
-              e.target.src = '/placeholder.jpg';
-            }}
+            onMouseEnter={(e) => { e.target.style.transform = 'scale(1.05)'; }}
+            onMouseLeave={(e) => { e.target.style.transform = 'scale(1)'; }}
+            onError={(e) => { e.target.src = '/placeholder.jpg'; }}
           />
-          
-          {/* Discount Badge - Positioned at top left */}
+
+          {/* Discount badge */}
           {product.discountedPrice < product.originalPrice && (
             <div style={{
               position: 'absolute',
@@ -196,9 +199,9 @@ export default function Catalog() {
               left: '8px',
               background: logoColors.gradient,
               color: 'white',
-              padding: '4px 8px',
+              padding: isMobile ? '2px 6px' : '4px 8px',
               borderRadius: '4px',
-              fontSize: '0.7rem',
+              fontSize: isMobile ? '0.6rem' : '0.7rem',
               fontWeight: '600',
               zIndex: 2,
               boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
@@ -207,7 +210,7 @@ export default function Catalog() {
             </div>
           )}
 
-          {/* Quick Add Button - Hidden on mobile, visible on hover on desktop */}
+          {/* Quick Add — desktop hover only */}
           <button
             onClick={(e) => {
               e.stopPropagation();
@@ -252,69 +255,95 @@ export default function Catalog() {
           </button>
 
           <style>{`
-            .product-card:hover .d-md-block {
-              opacity: 1 !important;
-            }
+            .product-card:hover .d-md-block { opacity: 1 !important; }
           `}</style>
         </div>
 
-        <Card.Body className="d-flex flex-column" style={{ padding: '0.75rem' }}>
-          {/* Product Title */}
-          <Card.Title 
+        {/* ── Card body ── */}
+        <Card.Body
+          className="d-flex flex-column"
+          style={{ padding: isMobile ? '0.4rem' : '0.75rem' }}
+        >
+          {/* Title */}
+          <Card.Title
             className="product-title"
             style={{
-              fontSize: '0.9rem',
+              fontSize: isMobile ? '0.72rem' : '0.9rem',
               fontWeight: '500',
               color: '#2D3748',
-              marginBottom: '0.25rem',
-              lineHeight: '1.4',
+              marginBottom: '0.2rem',
+              lineHeight: '1.3',
               display: '-webkit-box',
               WebkitLineClamp: 2,
               WebkitBoxOrient: 'vertical',
               overflow: 'hidden',
               textOverflow: 'ellipsis',
-              minHeight: '2.5rem'
+              minHeight: isMobile ? '2rem' : '2.5rem'
             }}
           >
             {product.name}
           </Card.Title>
 
-          {/* Category - Hidden on mobile to save space */}
-          <Card.Text className="d-none d-md-block text-muted product-category" style={{
-            fontSize: '0.75rem',
-            marginBottom: '0.5rem',
-            textTransform: 'uppercase',
-            letterSpacing: '0.5px'
-          }}>
-            {typeof product.category === 'object' ? product.category.name : (product.category || 'Uncategorized')}
+          {/* Category — desktop only */}
+          <Card.Text
+            className="d-none d-md-block text-muted product-category"
+            style={{
+              fontSize: '0.75rem',
+              marginBottom: '0.5rem',
+              textTransform: 'uppercase',
+              letterSpacing: '0.5px'
+            }}
+          >
+            {typeof product.category === 'object'
+              ? product.category.name
+              : (product.category || 'Uncategorized')}
           </Card.Text>
 
-          {/* Price - Now on its own row */}
+          {/* Price */}
           <div className="price-wrapper mb-1">
-            <div className="price d-flex align-items-center">
+            <div className="price d-flex align-items-center flex-wrap">
               {product.discountedPrice < product.originalPrice && (
-                <span className="original-price text-muted text-decoration-line-through me-2" style={{ fontSize: '0.7rem' }}>
+                <span
+                  className="original-price text-muted text-decoration-line-through me-1"
+                  style={{ fontSize: isMobile ? '0.6rem' : '0.7rem' }}
+                >
                   Rs. {product.originalPrice?.toLocaleString()}
                 </span>
               )}
-              <span className="current-price fw-bold" style={{ color: logoColors.primary, fontSize: '0.95rem' }}>
+              <span
+                className="current-price fw-bold"
+                style={{
+                  color: logoColors.primary,
+                  fontSize: isMobile ? '0.78rem' : '0.95rem'
+                }}
+              >
                 Rs. {product.discountedPrice || product.price?.toLocaleString()}
               </span>
             </div>
           </div>
 
-          {/* Rating - Now below price */}
-          <div className="rating-wrapper mb-2">
-            <div className="rating d-flex align-items-center" style={{ fontSize: '0.7rem' }}>
-              <FaStar style={{ color: logoColors.primary, fontSize: '0.7rem' }} />
-              <span className="ms-1" style={{ color: '#4A5568' }}>{product.rating.toFixed(1)}</span>
+          {/* Rating */}
+          <div className="rating-wrapper mb-1">
+            <div className="rating d-flex align-items-center">
+              <FaStar style={{ color: logoColors.primary, fontSize: isMobile ? '0.6rem' : '0.7rem' }} />
+              <span
+                className="ms-1"
+                style={{ color: '#4A5568', fontSize: isMobile ? '0.65rem' : '0.7rem' }}
+              >
+                {product.rating.toFixed(1)}
+              </span>
               {product.reviewCount > 0 && (
-                <small className="text-muted ms-1" style={{ color: '#718096' }}>({product.reviewCount})</small>
+                <small
+                  className="text-muted ms-1"
+                  style={{ color: '#718096', fontSize: isMobile ? '0.6rem' : '0.65rem' }}
+                >
+                  ({product.reviewCount})
+                </small>
               )}
             </div>
           </div>
 
-          {/* Mobile Add to Cart Button - Visible only on mobile */}
+          {/* Add to Cart — mobile only */}
           <button
             onClick={(e) => {
               e.stopPropagation();
@@ -326,25 +355,19 @@ export default function Catalog() {
               background: product.stock > 0 ? logoColors.gradient : '#e2e8f0',
               color: product.stock > 0 ? 'white' : '#718096',
               border: 'none',
-              padding: '8px 0',
-              borderRadius: '6px',
-              fontSize: '0.8rem',
+              padding: '5px 0',
+              borderRadius: '5px',
+              fontSize: '0.7rem',
               fontWeight: '500',
               cursor: product.stock > 0 ? 'pointer' : 'not-allowed',
               transition: 'all 0.2s ease',
-              marginTop: '0.25rem'
+              marginTop: 'auto'
             }}
           >
             {product.stock > 0 ? (
-              <>
-                <FaShoppingCart className="me-2" size={12} />
-                Add
-              </>
+              <><FaShoppingCart className="me-1" size={10} />Add</>
             ) : (
-              <>
-                <FaBoxOpen className="me-2" size={12} />
-                Out of Stock
-              </>
+              <><FaBoxOpen className="me-1" size={10} />Out of Stock</>
             )}
           </button>
         </Card.Body>
@@ -359,15 +382,13 @@ export default function Catalog() {
     }}>
       <Container>
         <div className="page-header-wrapper mb-3 mb-md-5 text-center">
-          <h1 className="page-header" style={{ 
+          <h1 className="page-header" style={{
             color: logoColors.dark,
             fontSize: 'clamp(1.5rem, 5vw, 2.5rem)',
             fontWeight: '600'
           }}>
             Our Products
           </h1>
-
-          {/* Decorative line under header */}
           <div style={{
             height: '2px',
             background: `linear-gradient(90deg, transparent, ${logoColors.primary}40, transparent)`,
@@ -390,9 +411,7 @@ export default function Catalog() {
             <p className="mt-3" style={{ color: '#4A5568' }}>Loading products...</p>
           </div>
         ) : error ? (
-          <Alert variant="danger" className="text-center">
-            {error}
-          </Alert>
+          <Alert variant="danger" className="text-center">{error}</Alert>
         ) : filteredProducts.length === 0 ? (
           <div className="text-center my-5 py-5">
             <div style={{
@@ -407,9 +426,7 @@ export default function Catalog() {
             }}>
               <FaBoxOpen size={32} style={{ color: logoColors.primary }} />
             </div>
-            <h4 style={{ color: logoColors.dark, marginBottom: '0.5rem' }}>
-              No Products Found
-            </h4>
+            <h4 style={{ color: logoColors.dark, marginBottom: '0.5rem' }}>No Products Found</h4>
             <p style={{ color: '#718096', fontSize: '1rem', maxWidth: '400px', margin: '0 auto' }}>
               Try adjusting your filters or check back later for new products.
             </p>
@@ -420,7 +437,6 @@ export default function Catalog() {
           </Row>
         )}
 
-        {/* Product count */}
         {filteredProducts.length > 0 && (
           <div className="text-center mt-4">
             <p style={{ color: '#718096', fontSize: '0.85rem' }}>

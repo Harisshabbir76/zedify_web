@@ -15,7 +15,6 @@ import { CartContext } from '../components/CartContext';
 import FilterComponent from './Filter';
 import './heroSlider.css';
 
-// Navbar color palette
 const logoColors = {
   primary: '#fe7e8b',
   secondary: '#e65c70',
@@ -33,8 +32,16 @@ const NewArrivals = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [sortOption, setSortOption] = useState('default');
+  const [isMobile, setIsMobile] = useState(false);
   const { addToCart } = useContext(CartContext);
   const navigate = useNavigate();
+
+  useEffect(() => {
+    const checkMobile = () => setIsMobile(window.innerWidth <= 768);
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
 
   useEffect(() => {
     const fetchNewArrivals = async () => {
@@ -61,7 +68,6 @@ const NewArrivals = () => {
   useEffect(() => {
     const sortProducts = () => {
       let sorted = [...products];
-
       switch (sortOption) {
         case 'price-high-low':
           sorted.sort((a, b) => b.discountedPrice - a.discountedPrice);
@@ -78,19 +84,14 @@ const NewArrivals = () => {
         default:
           break;
       }
-
       setFilteredProducts(sorted);
     };
-
     sortProducts();
   }, [sortOption, products]);
 
   const handleAddToCart = (product) => {
     if (product.stock > 0) {
-      addToCart({
-        ...product,
-        quantity: 1
-      });
+      addToCart({ ...product, quantity: 1 });
     }
   };
 
@@ -107,7 +108,7 @@ const NewArrivals = () => {
     }}>
       <Container>
         <div className="page-header-wrapper mb-3 mb-md-5 text-center">
-          <h1 className="page-header" style={{ 
+          <h1 className="page-header" style={{
             color: logoColors.dark,
             fontSize: 'clamp(1.5rem, 5vw, 2.5rem)',
             fontWeight: '600'
@@ -115,12 +116,9 @@ const NewArrivals = () => {
             <FaCalendarAlt className="me-2" style={{ color: logoColors.primary, fontSize: 'clamp(1.2rem, 4vw, 2rem)' }} />
             New Arrivals
           </h1>
-
           <p className="lead mt-2" style={{ color: '#4A5568', fontSize: 'clamp(0.9rem, 3vw, 1.1rem)' }}>
             Discover our latest products added in the last 30 days
           </p>
-
-          {/* Decorative line under header */}
           <div style={{
             height: '2px',
             background: `linear-gradient(90deg, transparent, ${logoColors.primary}40, transparent)`,
@@ -140,9 +138,7 @@ const NewArrivals = () => {
             <p className="mt-3" style={{ color: '#4A5568' }}>Loading new arrivals...</p>
           </div>
         ) : error ? (
-          <Alert variant="danger" className="text-center">
-            {error}
-          </Alert>
+          <Alert variant="danger" className="text-center">{error}</Alert>
         ) : filteredProducts.length === 0 ? (
           <div className="text-center my-5 py-5">
             <div style={{
@@ -157,21 +153,21 @@ const NewArrivals = () => {
             }}>
               <FaCalendarAlt size={32} style={{ color: logoColors.primary }} />
             </div>
-            <h4 style={{ color: logoColors.dark, marginBottom: '0.5rem' }}>
-              No New Arrivals
-            </h4>
+            <h4 style={{ color: logoColors.dark, marginBottom: '0.5rem' }}>No New Arrivals</h4>
             <p style={{ color: '#718096', fontSize: '1rem', maxWidth: '400px', margin: '0 auto' }}>
               Check back soon for our latest products!
             </p>
           </div>
         ) : (
           <>
+            {/* Mobile grid */}
             <div className="d-block d-md-none">
               <Row xs={2} className="g-2">
                 {filteredProducts.map(product => (
                   <ProductCard
                     key={product._id}
                     product={product}
+                    isMobile={true}
                     onAddToCart={handleAddToCart}
                     onViewDetails={() => navigate(`/catalog/${product._id}`)}
                     getProductImage={getProductImage}
@@ -180,12 +176,14 @@ const NewArrivals = () => {
               </Row>
             </div>
 
+            {/* Desktop grid */}
             <div className="d-none d-md-block">
               <Row xs={1} sm={2} md={3} lg={4} className="g-4">
                 {filteredProducts.map(product => (
                   <ProductCard
                     key={product._id}
                     product={product}
+                    isMobile={false}
                     onAddToCart={handleAddToCart}
                     onViewDetails={() => navigate(`/catalog/${product._id}`)}
                     getProductImage={getProductImage}
@@ -194,7 +192,6 @@ const NewArrivals = () => {
               </Row>
             </div>
 
-            {/* Product count */}
             <div className="text-center mt-4">
               <p style={{ color: '#718096', fontSize: '0.85rem' }}>
                 Showing {filteredProducts.length} new arrival{filteredProducts.length !== 1 ? 's' : ''}
@@ -207,10 +204,10 @@ const NewArrivals = () => {
   );
 };
 
-const ProductCard = ({ product, onAddToCart, onViewDetails, getProductImage }) => {
+const ProductCard = ({ product, isMobile, onAddToCart, onViewDetails, getProductImage }) => {
   return (
     <Col>
-      <Card 
+      <Card
         className="product-card h-100 border-0"
         onClick={onViewDetails}
         style={{
@@ -232,13 +229,18 @@ const ProductCard = ({ product, onAddToCart, onViewDetails, getProductImage }) =
           e.currentTarget.style.boxShadow = '0 2px 8px rgba(0,0,0,0.04)';
         }}
       >
-        <div className="product-image-container" style={{ 
-          position: 'relative',
-          width: '100%',
-          aspectRatio: '3/4',
-          overflow: 'hidden',
-          backgroundColor: '#f8f9fa'
-        }}>
+        {/* ── Image container ── */}
+        <div
+          className="product-image-container"
+          style={{
+            position: 'relative',
+            width: '100%',
+            // Mobile → 1/1 square (matches home page); Desktop → 3/4 portrait
+            aspectRatio: isMobile ? '1 / 1' : '3 / 4',
+            overflow: 'hidden',
+            backgroundColor: '#f8f9fa'
+          }}
+        >
           <Card.Img
             variant="top"
             src={getProductImage(product)}
@@ -250,18 +252,12 @@ const ProductCard = ({ product, onAddToCart, onViewDetails, getProductImage }) =
               objectFit: 'cover',
               transition: 'transform 0.3s ease'
             }}
-            onMouseEnter={(e) => {
-              e.target.style.transform = 'scale(1.05)';
-            }}
-            onMouseLeave={(e) => {
-              e.target.style.transform = 'scale(1)';
-            }}
-            onError={(e) => {
-              e.target.src = '/placeholder.jpg';
-            }}
+            onMouseEnter={(e) => { e.target.style.transform = 'scale(1.05)'; }}
+            onMouseLeave={(e) => { e.target.style.transform = 'scale(1)'; }}
+            onError={(e) => { e.target.src = '/placeholder.jpg'; }}
           />
-          
-          {/* Discount Badge */}
+
+          {/* Discount badge */}
           {product.discountedPrice < product.originalPrice && (
             <div style={{
               position: 'absolute',
@@ -269,9 +265,9 @@ const ProductCard = ({ product, onAddToCart, onViewDetails, getProductImage }) =
               left: '8px',
               background: logoColors.gradient,
               color: 'white',
-              padding: '4px 8px',
+              padding: isMobile ? '2px 6px' : '4px 8px',
               borderRadius: '4px',
-              fontSize: '0.7rem',
+              fontSize: isMobile ? '0.6rem' : '0.7rem',
               fontWeight: '600',
               zIndex: 2,
               boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
@@ -280,16 +276,16 @@ const ProductCard = ({ product, onAddToCart, onViewDetails, getProductImage }) =
             </div>
           )}
 
-          {/* New Arrival Badge */}
+          {/* New badge */}
           <div style={{
             position: 'absolute',
             top: '8px',
             right: '8px',
             background: logoColors.primary,
             color: 'white',
-            padding: '4px 8px',
+            padding: isMobile ? '2px 6px' : '4px 8px',
             borderRadius: '4px',
-            fontSize: '0.65rem',
+            fontSize: isMobile ? '0.6rem' : '0.65rem',
             fontWeight: '600',
             zIndex: 2,
             boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
@@ -297,12 +293,9 @@ const ProductCard = ({ product, onAddToCart, onViewDetails, getProductImage }) =
             NEW
           </div>
 
-          {/* Quick Add Button - Desktop only */}
+          {/* Quick Add — desktop hover only */}
           <button
-            onClick={(e) => {
-              e.stopPropagation();
-              onAddToCart(product);
-            }}
+            onClick={(e) => { e.stopPropagation(); onAddToCart(product); }}
             className="d-none d-md-block"
             disabled={product.stock <= 0}
             style={{
@@ -342,74 +335,92 @@ const ProductCard = ({ product, onAddToCart, onViewDetails, getProductImage }) =
           </button>
 
           <style>{`
-            .product-card:hover .d-md-block {
-              opacity: 1 !important;
-            }
+            .product-card:hover .d-md-block { opacity: 1 !important; }
           `}</style>
         </div>
 
-        <Card.Body className="d-flex flex-column" style={{ padding: '0.75rem' }}>
-          {/* Product Title */}
-          <Card.Title 
+        {/* ── Card body ── */}
+        <Card.Body
+          className="d-flex flex-column"
+          style={{ padding: isMobile ? '0.4rem' : '0.75rem' }}
+        >
+          {/* Title */}
+          <Card.Title
             className="product-title"
             style={{
-              fontSize: '0.9rem',
+              fontSize: isMobile ? '0.72rem' : '0.9rem',
               fontWeight: '500',
               color: '#2D3748',
-              marginBottom: '0.25rem',
-              lineHeight: '1.4',
+              marginBottom: '0.2rem',
+              lineHeight: '1.3',
               display: '-webkit-box',
               WebkitLineClamp: 2,
               WebkitBoxOrient: 'vertical',
               overflow: 'hidden',
               textOverflow: 'ellipsis',
-              minHeight: '2.5rem'
+              minHeight: isMobile ? '2rem' : '2.5rem'
             }}
           >
             {product.name}
           </Card.Title>
 
-          {/* Category - Hidden on mobile */}
-          <Card.Text className="d-none d-md-block text-muted product-category" style={{
-            fontSize: '0.75rem',
-            marginBottom: '0.5rem',
-            textTransform: 'uppercase',
-            letterSpacing: '0.5px'
-          }}>
-            {typeof product.category === 'object' ? product.category.name : (product.category || 'Uncategorized')}
+          {/* Category — desktop only */}
+          <Card.Text
+            className="d-none d-md-block text-muted product-category"
+            style={{
+              fontSize: '0.75rem',
+              marginBottom: '0.5rem',
+              textTransform: 'uppercase',
+              letterSpacing: '0.5px'
+            }}
+          >
+            {typeof product.category === 'object'
+              ? product.category.name
+              : (product.category || 'Uncategorized')}
           </Card.Text>
 
-          {/* Price - Now on its own row */}
+          {/* Price */}
           <div className="price-wrapper mb-1">
             <div className="price d-flex align-items-center flex-wrap">
               {product.discountedPrice < product.originalPrice && (
-                <span className="original-price text-muted text-decoration-line-through me-2" style={{ fontSize: '0.7rem' }}>
+                <span
+                  className="original-price text-muted text-decoration-line-through me-1"
+                  style={{ fontSize: isMobile ? '0.6rem' : '0.7rem' }}
+                >
                   Rs. {product.originalPrice?.toLocaleString()}
                 </span>
               )}
-              <span className="current-price fw-bold" style={{ color: logoColors.primary, fontSize: '0.95rem' }}>
+              <span
+                className="current-price fw-bold"
+                style={{
+                  color: logoColors.primary,
+                  fontSize: isMobile ? '0.78rem' : '0.95rem'
+                }}
+              >
                 Rs. {product.discountedPrice?.toLocaleString()}
               </span>
             </div>
           </div>
 
-          {/* Rating - Now below price */}
-          <div className="rating-wrapper mb-2">
+          {/* Rating */}
+          <div className="rating-wrapper mb-1">
             <div className="rating d-flex align-items-center" style={{ fontSize: '0.7rem' }}>
-              <FaStar style={{ color: logoColors.primary, fontSize: '0.7rem' }} />
-              <span className="ms-1" style={{ color: '#4A5568' }}>{product.rating}</span>
+              <FaStar style={{ color: logoColors.primary, fontSize: isMobile ? '0.6rem' : '0.7rem' }} />
+              <span className="ms-1" style={{ color: '#4A5568', fontSize: isMobile ? '0.65rem' : '0.7rem' }}>
+                {product.rating}
+              </span>
             </div>
           </div>
 
-          {/* Stock status - Mobile only */}
-          <div className="d-md-none mb-2">
+          {/* Stock badge — mobile only */}
+          <div className="d-md-none mb-1">
             <Badge
-              bg={product.stock > 0 ? "success" : "danger"}
+              bg={product.stock > 0 ? 'success' : 'danger'}
               style={{
                 background: product.stock > 0 ? logoColors.primary : '#dc3545',
                 border: 'none',
-                fontSize: '0.6rem',
-                padding: '2px 6px',
+                fontSize: '0.55rem',
+                padding: '2px 5px',
                 fontWeight: '400'
               }}
             >
@@ -417,37 +428,28 @@ const ProductCard = ({ product, onAddToCart, onViewDetails, getProductImage }) =
             </Badge>
           </div>
 
-          {/* Mobile Add to Cart Button */}
+          {/* Add to Cart — mobile only */}
           <button
-            onClick={(e) => {
-              e.stopPropagation();
-              onAddToCart(product);
-            }}
+            onClick={(e) => { e.stopPropagation(); onAddToCart(product); }}
             className="d-md-none w-100"
             disabled={product.stock <= 0}
             style={{
               background: product.stock > 0 ? logoColors.gradient : '#e2e8f0',
               color: product.stock > 0 ? 'white' : '#718096',
               border: 'none',
-              padding: '8px 0',
-              borderRadius: '6px',
-              fontSize: '0.8rem',
+              padding: '5px 0',
+              borderRadius: '5px',
+              fontSize: '0.7rem',
               fontWeight: '500',
               cursor: product.stock > 0 ? 'pointer' : 'not-allowed',
               transition: 'all 0.2s ease',
-              marginTop: '0.25rem'
+              marginTop: 'auto'
             }}
           >
             {product.stock > 0 ? (
-              <>
-                <FaShoppingCart className="me-2" size={12} />
-                Add to Cart
-              </>
+              <><FaShoppingCart className="me-1" size={10} />Add to Cart</>
             ) : (
-              <>
-                <FaBoxOpen className="me-2" size={12} />
-                Out of Stock
-              </>
+              <><FaBoxOpen className="me-1" size={10} />Out of Stock</>
             )}
           </button>
         </Card.Body>
