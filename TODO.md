@@ -1,14 +1,11 @@
-# Order Management Tabs Enhancement - TODO
+# Task: Add WhatsApp Admin Number .env Variable
 
-## Plan Steps:
-- [ ] Step 1: Create TODO.md with approved plan steps ✅
-- [x] Step 2: Edit frontend/src/components/OrderManagement.js 
-  - Add filtered.new (today's non-delivery/completed orders) ✅
-  - Add filtered.pending (all pending orders) ✅
-  - Restore filtered.all to show ALL orders ✅
-  - Update filteredCounts for new/pending ✅
-  - Add Tab for 'new' and 'pending' ✅
-  - Update StatPills to show relevant counts (Total, New, Pending, Delivery, Completed) ✅
-- [x] Step 3: Test functionality complete per feedback
-- [ ] Step 4: Complete task with attempt_completion
-- [ ] Step 4: Complete task with attempt_completion
+## Approved Plan Steps:
+1. ✅ [Complete] Create TODO.md with plan breakdown
+2. [Pending] Add WHATSAPP_ADMIN_NUMBER to backend/.env (placeholder, user to update real number)
+3. [Pending] Update backend/routes/whatsappRoutes.js to use process.env.WHATSAPP_ADMIN_NUMBER
+4. [Pending] Optionally update frontend WhatsAppButton if needed for admin notifications
+5. [Pending] Test changes and complete task
+
+**Status:** Plan approved. Awaiting real admin number from user to finalize .env. Next: Add env var (placeholder for now).
+

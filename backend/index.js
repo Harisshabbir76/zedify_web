@@ -39,7 +39,7 @@ app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 app.use(express.json());
 
 const corsOptions = {
-  origin: ['http://localhost:3000',  
+  origin: ['http://localhost:3000',   
             'https://zedify-web.vercel.app',
             'https://www.zedify.store'
     

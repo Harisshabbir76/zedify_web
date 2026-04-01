@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useContext } from 'react';
+import React, { useState, useEffect, useContext, useRef } from 'react';
 import axios from 'axios';
 import {
   Navbar as BootstrapNavbar,
@@ -24,7 +24,6 @@ import {
   FiChevronDown,
   FiChevronUp
 } from 'react-icons/fi';
-import { useRef } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { CartContext } from '../components/CartContext';
 import logoImage from '../images/logo.png';
@@ -35,11 +34,12 @@ const Navbar = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [categories, setCategories] = useState([]);
   const [mobileCategoriesOpen, setMobileCategoriesOpen] = useState(false);
+  const [desktopCategoriesOpen, setDesktopCategoriesOpen] = useState(false);
+  const categoriesRef = useRef(null);
   const location = useLocation();
   const navigate = useNavigate();
   const { cartCount } = useContext(CartContext);
 
-  // Colors
   const navbarColors = {
     primary: '#fe7e8b',
     secondary: '#e65c70',
@@ -53,7 +53,6 @@ const Navbar = () => {
     softGradient: 'linear-gradient(135deg, #fff5f6 0%, #ffe0e3 100%)',
   };
 
-  // Fetch categories for dropdown
   useEffect(() => {
     const fetchCategories = async () => {
       try {
@@ -66,6 +65,17 @@ const Navbar = () => {
       }
     };
     fetchCategories();
+  }, []);
+
+  // Close desktop dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (categoriesRef.current && !categoriesRef.current.contains(event.target)) {
+        setDesktopCategoriesOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
   const navLinks = [
@@ -118,7 +128,6 @@ const Navbar = () => {
   return (
     <>
       <style>{`
-        /* Logo text styling */
         .text-logo {
           font-size: clamp(1.8rem, 5vw, 2.8rem);
           font-weight: 900;
@@ -131,36 +140,22 @@ const Navbar = () => {
           align-items: center;
         }
 
-        /* Global reset */
         body, html {
           margin: 0 !important;
           padding: 0 !important;
         }
-        
-        /* Navbar specific */
+
         .navbar {
           margin-bottom: 0 !important;
           padding-top: 0.5rem !important;
           padding-bottom: 0.5rem !important;
         }
-        
+
         .container-fluid {
           padding-left: 15px !important;
           padding-right: 15px !important;
         }
-        
-        .dropdown:hover .dropdown-content {
-          display: block !important;
-        }
-        .dropdown-content {
-          display: none;
-        }
-        .dropdown-content a:hover {
-          background-color: #f5f5f5 !important;
-          color: ${navbarColors.primary} !important;
-        }
 
-        /* Mobile layout styles */
         @media (max-width: 991px) {
           .mobile-nav-container {
             display: flex;
@@ -169,25 +164,21 @@ const Navbar = () => {
             width: 100%;
             padding: 0 10px;
           }
-          
           .mobile-left {
             flex: 1;
             display: flex;
             justify-content: flex-start;
           }
-          
           .mobile-center {
             flex: 1;
             display: flex;
             justify-content: center;
           }
-          
           .mobile-right {
             flex: 1;
             display: flex;
             justify-content: flex-end;
           }
-          
           .mobile-cart-btn,
           .mobile-menu-btn {
             width: 44px !important;
@@ -195,39 +186,31 @@ const Navbar = () => {
           }
         }
 
-        /* Sidebar styles */
         .offcanvas {
           background: ${navbarColors.background} !important;
         }
-        
         .offcanvas-header {
           background: ${navbarColors.background} !important;
           border-bottom: 1px solid ${navbarColors.border} !important;
         }
-        
         .offcanvas-title {
           color: white !important;
           font-weight: 600 !important;
         }
-        
         .offcanvas .btn-close {
           filter: brightness(0) invert(1) !important;
         }
-        
         .offcanvas .nav-link {
           color: white !important;
         }
-        
         .offcanvas .nav-link:hover {
           color: ${navbarColors.primary} !important;
           background-color: rgba(255, 255, 255, 0.1) !important;
         }
-        
         .offcanvas .nav-link.active {
           color: ${navbarColors.primary} !important;
           background-color: rgba(255, 255, 255, 0.15) !important;
         }
-        
         .offcanvas .border-top {
           border-color: rgba(255, 255, 255, 0.2) !important;
         }
@@ -245,7 +228,8 @@ const Navbar = () => {
         }}
       >
         <Container fluid="lg" className="justify-content-center" style={{ padding: 0, gap: '2rem' }}>
-          {/* Desktop Logo - visible on lg and up */}
+
+          {/* Desktop Logo */}
           <BootstrapNavbar.Brand
             as={Link}
             to="/"
@@ -253,14 +237,14 @@ const Navbar = () => {
             style={{ padding: 0 }}
           >
             <span className="text-logo">
-              <img 
-                src={logoImage} 
-                alt="Logo" 
-                style={{ 
-                  height: '50px',  // Increased from 50px to 70px for desktop
+              <img
+                src={logoImage}
+                alt="Logo"
+                style={{
+                  height: '50px',
                   objectFit: 'contain',
                   transition: 'all 0.3s ease'
-                }} 
+                }}
               />
             </span>
           </BootstrapNavbar.Brand>
@@ -295,14 +279,14 @@ const Navbar = () => {
             <div className="mobile-center">
               <Link to="/" style={{ textDecoration: 'none' }}>
                 <span className="text-logo" style={{ fontSize: 'clamp(1.8rem, 6vw, 2.5rem)' }}>
-                  <img 
-                    src={logoImage} 
-                    alt="Logo" 
-                    style={{ 
-                      height: '55px',  // Increased from 40px to 55px for mobile
+                  <img
+                    src={logoImage}
+                    alt="Logo"
+                    style={{
+                      height: '55px',
                       objectFit: 'contain',
                       transition: 'all 0.3s ease'
-                    }} 
+                    }}
                   />
                 </span>
               </Link>
@@ -359,6 +343,8 @@ const Navbar = () => {
           {/* Desktop Navigation */}
           <BootstrapNavbar.Collapse id="navbar-nav" className="flex-grow-0 justify-content-center" style={{ gap: '1rem' }}>
             <Nav className="m-0" style={{ flexWrap: 'nowrap' }}>
+
+              {/* First 3 nav links: Home, New Arrivals, Catalog */}
               {navLinks.slice(0, 3).map((link) => (
                 <Nav.Link
                   key={link.path}
@@ -393,23 +379,20 @@ const Navbar = () => {
                 </Nav.Link>
               ))}
 
-              {/* Categories Dropdown - After Catalog */}
+              {/* Desktop Categories Dropdown - Click based */}
               <div
-                className="dropdown"
-                style={{
-                  position: 'relative',
-                  display: 'inline-block'
-                }}
+                ref={categoriesRef}
+                style={{ position: 'relative', display: 'inline-block' }}
               >
                 <button
-                  className="dropbtn"
+                  onClick={() => setDesktopCategoriesOpen(prev => !prev)}
                   style={{
                     fontSize: '0.95rem',
                     border: 'none',
                     outline: 'none',
-                    color: 'white',
+                    color: desktopCategoriesOpen ? navbarColors.primary : 'white',
                     padding: '0.5rem 0.8rem',
-                    backgroundColor: 'transparent',
+                    backgroundColor: desktopCategoriesOpen ? '#fff5f6' : 'transparent',
                     fontFamily: 'inherit',
                     margin: '0 0.15rem',
                     borderRadius: '2rem',
@@ -418,60 +401,43 @@ const Navbar = () => {
                     display: 'flex',
                     alignItems: 'center',
                     gap: '0.25rem',
-                    cursor: 'pointer'
+                    cursor: 'pointer',
+                    transition: 'all 0.2s ease'
                   }}
                   onMouseEnter={(e) => {
-                    e.currentTarget.style.color = navbarColors.primary;
-                    e.currentTarget.style.backgroundColor = '#fff5f6';
+                    if (!desktopCategoriesOpen) {
+                      e.currentTarget.style.color = navbarColors.primary;
+                      e.currentTarget.style.backgroundColor = '#fff5f6';
+                    }
                   }}
                   onMouseLeave={(e) => {
-                    e.currentTarget.style.color = 'white';
-                    e.currentTarget.style.backgroundColor = 'transparent';
-                  }}
-                >
-                  Categories <FiChevronDown size={14} />
-                </button>
-                <div
-                  className="dropdown-content"
-                  style={{
-                    display: 'none',
-                    position: 'absolute',
-                    backgroundColor: 'white',
-                    minWidth: '200px',
-                    boxShadow: '0 8px 16px rgba(0,0,0,0.1)',
-                    zIndex: 1000,
-                    borderRadius: '12px',
-                    marginTop: '0.5rem',
-                    padding: '0.5rem 0',
-                    left: 0
-                  }}
-                >
-                  <Link
-                    to="/category"
-                    style={{
-                      color: '#333',
-                      padding: '10px 16px',
-                      textDecoration: 'none',
-                      display: 'block',
-                      fontSize: '0.9rem',
-                      transition: 'all 0.2s ease'
-                    }}
-                    onMouseEnter={(e) => {
-                      e.currentTarget.style.backgroundColor = '#f5f5f5';
-                      e.currentTarget.style.color = navbarColors.primary;
-                    }}
-                    onMouseLeave={(e) => {
+                    if (!desktopCategoriesOpen) {
+                      e.currentTarget.style.color = 'white';
                       e.currentTarget.style.backgroundColor = 'transparent';
-                      e.currentTarget.style.color = '#333';
+                    }
+                  }}
+                >
+                  Categories {desktopCategoriesOpen ? <FiChevronUp size={14} /> : <FiChevronDown size={14} />}
+                </button>
+
+                {desktopCategoriesOpen && (
+                  <div
+                    style={{
+                      position: 'absolute',
+                      top: '100%',
+                      left: 0,
+                      backgroundColor: 'white',
+                      minWidth: '200px',
+                      boxShadow: '0 8px 16px rgba(0,0,0,0.1)',
+                      zIndex: 1000,
+                      borderRadius: '12px',
+                      marginTop: '0.5rem',
+                      padding: '0.5rem 0',
                     }}
                   >
-                    All Categories
-                  </Link>
-                  <div style={{ height: '1px', backgroundColor: '#eee', margin: '4px 0' }} />
-                  {categories.map(cat => (
                     <Link
-                      key={cat._id || cat.name}
-                      to={`/category/${cat.name.replace(/\s+/g, '-').replace(/'/g, '')}`}
+                      to="/category"
+                      onClick={() => setDesktopCategoriesOpen(false)}
                       style={{
                         color: '#333',
                         padding: '10px 16px',
@@ -489,13 +455,39 @@ const Navbar = () => {
                         e.currentTarget.style.color = '#333';
                       }}
                     >
-                      {cat.name}
+                      All Categories
                     </Link>
-                  ))}
-                </div>
+                    <div style={{ height: '1px', backgroundColor: '#eee', margin: '4px 0' }} />
+                    {categories.map(cat => (
+                      <Link
+                        key={cat._id || cat.name}
+                        to={`/category/${cat.name.replace(/\s+/g, '-').replace(/'/g, '')}`}
+                        onClick={() => setDesktopCategoriesOpen(false)}
+                        style={{
+                          color: '#333',
+                          padding: '10px 16px',
+                          textDecoration: 'none',
+                          display: 'block',
+                          fontSize: '0.9rem',
+                          transition: 'all 0.2s ease'
+                        }}
+                        onMouseEnter={(e) => {
+                          e.currentTarget.style.backgroundColor = '#f5f5f5';
+                          e.currentTarget.style.color = navbarColors.primary;
+                        }}
+                        onMouseLeave={(e) => {
+                          e.currentTarget.style.backgroundColor = 'transparent';
+                          e.currentTarget.style.color = '#333';
+                        }}
+                      >
+                        {cat.name}
+                      </Link>
+                    ))}
+                  </div>
+                )}
               </div>
 
-              {/* Remaining nav links after Categories */}
+              {/* Remaining nav links: Bundles, About, Contact Us */}
               {navLinks.slice(3).map((link) => (
                 <Nav.Link
                   key={link.path}
@@ -531,7 +523,7 @@ const Navbar = () => {
               ))}
             </Nav>
 
-            {/* Search Bar - Always visible on desktop */}
+            {/* Search Bar */}
             <div className="d-none d-lg-flex align-items-center m-0" style={{ minWidth: '260px' }}>
               <Form onSubmit={handleSearch} className="w-100">
                 <div style={{
@@ -575,11 +567,9 @@ const Navbar = () => {
                     }}
                     onMouseEnter={(e) => {
                       e.currentTarget.style.backgroundColor = '#f5f5f5';
-                      e.currentTarget.style.color = navbarColors.primary;
                     }}
                     onMouseLeave={(e) => {
                       e.currentTarget.style.backgroundColor = 'white';
-                      e.currentTarget.style.color = navbarColors.primary;
                     }}
                   >
                     <FiSearch size={18} />
@@ -588,11 +578,10 @@ const Navbar = () => {
               </Form>
             </div>
 
-            {/* Desktop Right side icons */}
+            {/* Desktop Right Icons */}
             <div className="d-none d-lg-flex align-items-center gap-1">
               <Button
                 variant="link"
-                className="p-2"
                 onClick={isLoggedIn ? handleLogout : undefined}
                 as={isLoggedIn ? 'button' : Link}
                 to={isLoggedIn ? undefined : '/login'}
@@ -610,12 +599,12 @@ const Navbar = () => {
                   padding: 0
                 }}
                 onMouseEnter={(e) => {
-                  e.target.style.backgroundColor = '#E5E5E5';
-                  e.target.style.transform = 'scale(1.05)';
+                  e.currentTarget.style.backgroundColor = '#E5E5E5';
+                  e.currentTarget.style.transform = 'scale(1.05)';
                 }}
                 onMouseLeave={(e) => {
-                  e.target.style.backgroundColor = '#F5F5F5';
-                  e.target.style.transform = 'scale(1)';
+                  e.currentTarget.style.backgroundColor = '#F5F5F5';
+                  e.currentTarget.style.transform = 'scale(1)';
                 }}
               >
                 {isLoggedIn ? <FiLogOut size={18} /> : <FiUser size={18} />}
@@ -640,12 +629,12 @@ const Navbar = () => {
                   padding: 0
                 }}
                 onMouseEnter={(e) => {
-                  e.target.style.backgroundColor = '#E5E5E5';
-                  e.target.style.transform = 'scale(1.05)';
+                  e.currentTarget.style.backgroundColor = '#E5E5E5';
+                  e.currentTarget.style.transform = 'scale(1.05)';
                 }}
                 onMouseLeave={(e) => {
-                  e.target.style.backgroundColor = '#F5F5F5';
-                  e.target.style.transform = 'scale(1)';
+                  e.currentTarget.style.backgroundColor = '#F5F5F5';
+                  e.currentTarget.style.transform = 'scale(1)';
                 }}
               >
                 <FiShoppingBag size={18} />
@@ -676,7 +665,7 @@ const Navbar = () => {
           </BootstrapNavbar.Collapse>
         </Container>
 
-        {/* Mobile Sidebar - Opens from right */}
+        {/* Mobile Sidebar */}
         <Offcanvas
           show={showSidebar}
           onHide={() => setShowSidebar(false)}
@@ -700,7 +689,8 @@ const Navbar = () => {
           </Offcanvas.Header>
           <Offcanvas.Body style={{ padding: '1rem', background: navbarColors.background }}>
             <Nav className="flex-column">
-              {/* First three links - Home, New Arrivals, Catalog */}
+
+              {/* First 3 links: Home, New Arrivals, Catalog */}
               {navLinks.slice(0, 3).map((link) => (
                 <Nav.Link
                   key={link.path}
@@ -740,7 +730,7 @@ const Navbar = () => {
                 </Nav.Link>
               ))}
 
-              {/* Mobile Categories - After Catalog */}
+              {/* Mobile Categories Accordion */}
               <div style={{ width: '100%' }}>
                 <div
                   onClick={handleMobileCategoryClick}
@@ -765,10 +755,12 @@ const Navbar = () => {
                     </span>
                     Categories
                   </span>
-                  {mobileCategoriesOpen ? <FiChevronUp size={16} style={{ color: 'white' }} /> : <FiChevronDown size={16} style={{ color: 'white' }} />}
+                  {mobileCategoriesOpen
+                    ? <FiChevronUp size={16} style={{ color: 'white' }} />
+                    : <FiChevronDown size={16} style={{ color: 'white' }} />
+                  }
                 </div>
 
-                {/* Mobile Categories Dropdown - Shows all categories when clicked */}
                 {mobileCategoriesOpen && (
                   <div style={{
                     marginLeft: '2.5rem',
@@ -799,7 +791,6 @@ const Navbar = () => {
                     >
                       All Categories
                     </div>
-                    {/* Map through all categories */}
                     {categories.map(cat => (
                       <div
                         key={cat._id || cat.name}
@@ -829,7 +820,7 @@ const Navbar = () => {
                 )}
               </div>
 
-              {/* Remaining links after Categories - Bundles, About, Contact Us */}
+              {/* Remaining links: Bundles, About, Contact Us */}
               {navLinks.slice(3).map((link) => (
                 <Nav.Link
                   key={link.path}
@@ -869,14 +860,13 @@ const Navbar = () => {
                 </Nav.Link>
               ))}
 
+              {/* Login / Logout */}
               <div className="mt-3 pt-2 border-top" style={{ borderColor: 'rgba(255, 255, 255, 0.2)' }}>
                 <Nav.Link
-                  as={Link}
+                  as={isLoggedIn ? 'div' : Link}
                   to={isLoggedIn ? undefined : '/login'}
                   onClick={() => {
-                    if (isLoggedIn) {
-                      handleLogout();
-                    }
+                    if (isLoggedIn) handleLogout();
                     setShowSidebar(false);
                   }}
                   style={{
@@ -887,7 +877,8 @@ const Navbar = () => {
                     fontWeight: 500,
                     fontSize: '1rem',
                     color: 'white',
-                    textDecoration: 'none'
+                    textDecoration: 'none',
+                    cursor: 'pointer'
                   }}
                   onMouseEnter={(e) => {
                     e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.1)';
@@ -904,6 +895,7 @@ const Navbar = () => {
                   {isLoggedIn ? 'Logout' : 'Login'}
                 </Nav.Link>
               </div>
+
             </Nav>
           </Offcanvas.Body>
         </Offcanvas>

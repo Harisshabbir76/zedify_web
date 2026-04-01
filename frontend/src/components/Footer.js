@@ -1,7 +1,9 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Container, Row, Col } from 'react-bootstrap';
 import { FaFacebook, FaInstagram, FaTwitter, FaEnvelope, FaPhone, FaMapMarkerAlt } from 'react-icons/fa';
+import axios from 'axios';
 import './heroSlider.css';
+
 
 // Navbar color palette
 const logoColors = {
@@ -16,6 +18,34 @@ const logoColors = {
 };
 
 export default function Footer() {
+  const [categories, setCategories] = useState([]);
+
+  useEffect(() => {
+    const fetchCategories = async () => {
+      try {
+        const res = await axios.get(`${process.env.REACT_APP_API_URL}/api/categories`);
+        setCategories(res.data);
+      } catch (error) {
+        console.error('Failed to fetch categories:', error);
+      }
+    };
+    fetchCategories();
+  }, []);
+
+  const staticLinks = [
+    { label: 'Home', path: '/' },
+    { label: 'Shop', path: '/catalog' },
+    { label: 'About', path: '/about' },
+    { label: 'Contact', path: '/contact' }
+  ];
+
+  const categoryLinks = categories.map(cat => ({
+    label: cat.name,
+    path: `/category/${cat.slug}`
+  }));
+
+  const allLinks = [...staticLinks, ...categoryLinks];
+
   return (
     <footer className="site-footer" style={{
       background: logoColors.background,
@@ -24,6 +54,7 @@ export default function Footer() {
       position: 'relative',
       borderTop: `2px solid ${logoColors.primary}30` // Subtle pink bar at top
     }}>
+
       <Container>
         <Row>
           {/* Quick Links Column */}
@@ -41,33 +72,31 @@ export default function Footer() {
               padding: 0,
               margin: 0
             }}>
-              {['Home', 'Shop', 'T-Shirts', 'Bottoms', 'About', 'Contact'].map((item, index) => {
-                const paths = ['/', '/catalog', '/category/t-shirt', '/category/bottom', '/about', '/contact'];
-                return (
-                  <li key={index} style={{ marginBottom: '0.75rem' }}>
-                    <a
-                      href={paths[index]}
-                      style={{
-                        color: '#4A5568',
-                        textDecoration: 'none',
-                        transition: 'all 0.2s ease',
-                        fontSize: '0.95rem',
-                        display: 'inline-block'
-                      }}
-                      onMouseEnter={(e) => {
-                        e.target.style.color = logoColors.primary;
-                        e.target.style.transform = 'translateX(5px)';
-                      }}
-                      onMouseLeave={(e) => {
-                        e.target.style.color = '#4A5568';
-                        e.target.style.transform = 'translateX(0)';
-                      }}
-                    >
-                      {item}
-                    </a>
-                  </li>
-                );
-              })}
+              {allLinks.map((link, index) => (
+                <li key={index} style={{ marginBottom: '0.75rem' }}>
+                  <a
+                    href={link.path}
+                    style={{
+                      color: '#4A5568',
+                      textDecoration: 'none',
+                      transition: 'all 0.2s ease',
+                      fontSize: '0.95rem',
+                      display: 'inline-block'
+                    }}
+                    onMouseEnter={(e) => {
+                      e.target.style.color = logoColors.primary;
+                      e.target.style.transform = 'translateX(5px)';
+                    }}
+                    onMouseLeave={(e) => {
+                      e.target.style.color = '#4A5568';
+                      e.target.style.transform = 'translateX(0)';
+                    }}
+                  >
+                    {link.label}
+                  </a>
+                </li>
+              ))}
+
             </ul>
           </Col>
 
@@ -92,15 +121,8 @@ export default function Footer() {
                 alignItems: 'flex-start',
                 gap: '0.75rem'
               }}>
-                <FaMapMarkerAlt style={{
-                  color: logoColors.primary,
-                  fontSize: '1rem',
-                  marginTop: '0.2rem',
-                  flexShrink: 0
-                }} />
-                <span style={{ color: '#4A5568', fontSize: '0.95rem', lineHeight: '1.5' }}>
-                  123 Fashion Street, Style City
-                </span>
+                
+                
               </li>
               <li style={{
                 marginBottom: '1rem',
@@ -114,7 +136,7 @@ export default function Footer() {
                   flexShrink: 0
                 }} />
                 <span style={{ color: '#4A5568', fontSize: '0.95rem' }}>
-                  (123) 456-7890
+                  0316-9677367
                 </span>
               </li>
               <li style={{
@@ -129,7 +151,7 @@ export default function Footer() {
                   flexShrink: 0
                 }} />
                 <span style={{ color: '#4A5568', fontSize: '0.95rem' }}>
-                  info@zedify.com
+                  bushrat544@gmail.com 
                 </span>
               </li>
             </ul>
