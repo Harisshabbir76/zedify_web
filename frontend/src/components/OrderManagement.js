@@ -562,19 +562,29 @@ const OrderManagement = () => {
     return true;
   };
 
-  const filtered = {
-    all: orders.filter(o => filterByDate(o.orderDate)),
-    delivery: orders.filter(o => o.status === 'out-for-delivery' && filterByDate(o.orderDate)),
-    completed: orders.filter(o => o.status === 'completed' && filterByDate(o.orderDate)),
-  };
+const filtered = {
+  all: orders.filter(o => filterByDate(o.orderDate)),
+  new: orders.filter(o => {
+    const orderDate = new Date(o.orderDate);
+    const today = new Date();
+    today.setHours(0,0,0,0);
+    return orderDate.toDateString() === today.toDateString() && 
+           !['out-for-delivery', 'completed'].includes(o.status);
+  }),
+  pending: orders.filter(o => o.status === 'pending' && filterByDate(o.orderDate)),
+  delivery: orders.filter(o => o.status === 'out-for-delivery' && filterByDate(o.orderDate)),
+  completed: orders.filter(o => o.status === 'completed' && filterByDate(o.orderDate)),
+};
 
-  useEffect(() => {
-    setFilteredCounts({
-      all: filtered.all.length,
-      delivery: filtered.delivery.length,
-      completed: filtered.completed.length,
-    });
-  }, [filtered.all.length, filtered.completed.length, filtered.delivery.length]);
+useEffect(() => {
+  setFilteredCounts({
+    all: filtered.all.length,
+    new: filtered.new.length,
+    pending: filtered.pending.length,
+    delivery: filtered.delivery.length,
+    completed: filtered.completed.length,
+  });
+}, [filtered.all.length, filtered.new.length, filtered.pending.length, filtered.completed.length, filtered.delivery.length]);
 
   /* Loading screen */
   if (authLoading) return (
@@ -648,7 +658,9 @@ const OrderManagement = () => {
 
             {/* Stat pills */}
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem' }}>
-              <StatPill label="Total" value={filteredCounts.all} icon={FiPackage} active />
+<StatPill label="Total" value={filteredCounts.all} icon={FiPackage} active />
+              <StatPill label="New Today" value={filteredCounts.new} icon={FiClock} />
+              <StatPill label="Pending" value={filteredCounts.pending} icon={FiClock} />
               <StatPill label="Delivery" value={filteredCounts.delivery} icon={FiTruck} />
               <StatPill label="Done" value={filteredCounts.completed} icon={FiCheckCircle} />
             </div>
@@ -780,6 +792,30 @@ const OrderManagement = () => {
                   onViewDetails={viewOrderDetails}
                   loading={loading}
                   emptyMessage="No completed orders yet"
+                />
+              </Tab>
+              <Tab
+                eventKey="new"
+                title={<TabTitle icon={<FiClock />} text="New Today" count={filteredCounts.new} active={activeTab === 'new'} />}
+              >
+                <OrderTable
+                  orders={filtered.new}
+                  onStatusUpdate={updateOrderStatus}
+                  onViewDetails={viewOrderDetails}
+                  loading={loading}
+                  emptyMessage="No new orders today"
+                />
+              </Tab>
+              <Tab
+                eventKey="pending"
+                title={<TabTitle icon={<FiClock />} text="Pending" count={filteredCounts.pending} active={activeTab === 'pending'} />}
+              >
+                <OrderTable
+                  orders={filtered.pending}
+                  onStatusUpdate={updateOrderStatus}
+                  onViewDetails={viewOrderDetails}
+                  loading={loading}
+                  emptyMessage="No pending orders"
                 />
               </Tab>
             </Tabs>

@@ -350,14 +350,8 @@ const OrderDetailsModal = ({ show, onHide, order }) => {
             flexWrap: 'wrap',
             gap: '0.75rem'
           }}>
-            {/* Payment + Status */}
+            {/* Status */}
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', flexWrap: 'wrap' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
-                <FiCreditCard size={14} style={{ color: C.light }} />
-                <span style={{ fontSize: '0.8rem', color: C.subtext, fontWeight: 500 }}>
-                  {order.paymentMethod}
-                </span>
-              </div>
               <StatusBadge status={order.status} />
             </div>
 

@@ -17,7 +17,6 @@ const reviewRoutes = require('./routes/reviewRoutes');
 const heroRoutes = require('./routes/heroRoutes');
 const settingsRoutes = require('./routes/settingsRoutes');
 const whatsappRoutes = require('./routes/whatsappRoutes');
-const paymentRoutes = require('./routes/paymentRoutes');
 
 const app = express();
 const PORT = process.env.PORT || 5002;
@@ -33,10 +32,6 @@ app.use((req, res, next) => {
   console.log(`${req.method} ${req.path}`);
   next();
 });
-
-// Stripe Webhook - raw body parser (must be before express.json)
-// This is required for Stripe webhook signature verification
-app.use('/api/payment/webhook', express.raw({ type: 'application/json' }));
 
 // File uploads
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
@@ -70,7 +65,6 @@ app.use(reviewRoutes);
 app.use(heroRoutes);
 app.use(settingsRoutes);
 app.use(whatsappRoutes);
-app.use(paymentRoutes);
 
 // MongoDB Connection
 const MONGO_URI = process.env.MONGO_URI;

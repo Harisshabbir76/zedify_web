@@ -15,8 +15,6 @@ import {
 import { FiShoppingBag } from 'react-icons/fi';
 import { useNavigate, useLocation, Link } from 'react-router-dom';
 import { useCart } from './CartContext';
-import { loadStripe } from '@stripe/stripe-js';
-import { Elements, CardElement, useStripe, useElements } from '@stripe/react-stripe-js';
 
 // Navbar color palette
 const logoColors = {
@@ -31,35 +29,7 @@ const logoColors = {
 };
 
 
-// Initialize Stripe with public key from env
-const stripePromise = loadStripe(process.env.REACT_APP_STRIPE_PUBLIC_KEY || 'pk_test_placeholder');
-
-// Card Element styling - Professional design
-const cardElementOptions = {
-  style: {
-    base: {
-      fontSize: '16px',
-      color: '#2D3748',
-      '::placeholder': {
-        color: '#A0AEC0',
-        fontWeight: '400',
-      },
-      fontFamily: '"Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
-      fontSmoothing: 'antialiased',
-      iconColor: '#fe7e8b',
-    },
-    invalid: {
-      color: '#E53E3E',
-      iconColor: '#E53E3E',
-    },
-  },
-  hidePostalCode: true,
-  classes: {
-    base: 'stripe-card-element',
-    focus: 'stripe-card-element--focus',
-    invalid: 'stripe-card-element--invalid',
-  },
-};
+// Stripe removed
 
 // Country name to ISO code mapping
 const countryCodeMap = {
@@ -87,8 +57,6 @@ const getCountryCode = (countryName) => {
 
 // Checkout Form Component with Stripe - Combined Logic
 const CheckoutForm = ({ cart, cartTotal, clearCart, onOrderSuccess }) => {
-  const stripe = useStripe();
-  const elements = useElements();
   const navigate = useNavigate();
 
   const [formData, setFormData] = useState({
@@ -101,7 +69,7 @@ const CheckoutForm = ({ cart, cartTotal, clearCart, onOrderSuccess }) => {
     state: '',
     zipCode: '',
     country: '',
-    paymentMethod: 'creditCard'
+    paymentMethod: 'cashOnDelivery'
   });
 
   const [couponCode, setCouponCode] = useState('');
@@ -111,9 +79,6 @@ const CheckoutForm = ({ cart, cartTotal, clearCart, onOrderSuccess }) => {
 
   const [errors, setErrors] = useState({});
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [cardError, setCardError] = useState('');
-  const [processing, setProcessing] = useState(false);
-  const [isCardFocused, setIsCardFocused] = useState(false);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -190,113 +155,7 @@ const CheckoutForm = ({ cart, cartTotal, clearCart, onOrderSuccess }) => {
 
   const finalAmount = cartTotal - discountAmount;
 
-  const handlePayment = async (e) => {
-    e.preventDefault();
 
-    if (!stripe || !elements) {
-      return;
-    }
-
-    if (!validateForm()) return;
-
-    setProcessing(true);
-    setCardError('');
-
-    try {
-      // Create payment intent
-      const { data: { clientSecret } } = await axios.post(
-        `${process.env.REACT_APP_API_URL}/api/create-payment-intent`,
-        {
-          amount: Math.round(cartTotal * 100), // Convert to cents/paisa
-          currency: 'pkr',
-          products: cart.map(item => ({
-            productId: item._id || item.productId,
-            quantity: item.quantity,
-            price: item.discountedPrice || item.price,
-            category: item.category,
-            size: item.selectedSize,
-            color: item.selectedColor
-          })),
-          couponCode: couponStatus.type === 'success' ? couponCode : null
-        }
-      );
-
-      // Confirm payment with Stripe
-      const cardElement = elements.getElement(CardElement);
-      const { error, paymentIntent } = await stripe.confirmCardPayment(clientSecret, {
-        payment_method: {
-          card: cardElement,
-          billing_details: {
-            name: `${formData.firstName} ${formData.lastName}`,
-            email: formData.email,
-            phone: formData.phone,
-            address: {
-              line1: formData.address,
-              city: formData.city,
-              state: formData.state,
-              country: getCountryCode(formData.country),
-            },
-          },
-        },
-      });
-
-      if (error) {
-        setCardError(error.message);
-        setProcessing(false);
-        return;
-      }
-
-      if (paymentIntent.status === 'succeeded') {
-        // Process the order on backend
-        const orderData = {
-          paymentIntentId: paymentIntent.id,
-          customerName: `${formData.firstName} ${formData.lastName}`,
-          email: formData.email,
-          phone: formData.phone,
-          address: `${formData.address}, ${formData.city}, ${formData.state}, ${formData.country}`,
-          city: formData.city,
-          zipCode: '',
-          products: cart.map(item => ({
-            productId: item._id || item.productId,
-            name: item.name,
-            quantity: item.quantity,
-            price: item.discountedPrice || item.price,
-            category: item.category,
-            size: item.selectedSize,
-            color: item.selectedColor
-          })),
-          totalAmount: cartTotal,
-          couponCode: couponStatus.type === 'success' ? couponCode : null,
-          paymentMethod: 'card'
-        };
-
-        const response = await axios.post(`${process.env.REACT_APP_API_URL}/api/process-payment`, orderData);
-
-        clearCart();
-
-        // Navigate to success page with all details
-        onOrderSuccess({
-          order: response.data.order,
-          customerName: `${formData.firstName} ${formData.lastName}`,
-          email: formData.email,
-          phone: formData.phone,
-          address: orderData.address,
-          city: formData.city,
-          state: formData.state,
-          country: formData.country,
-          products: orderData.products,
-          totalAmount: finalAmount,
-          paymentMethod: 'card',
-          isPaymentSuccess: true
-        });
-      }
-    } catch (err) {
-      console.error('Payment error:', err);
-      setCardError('Payment failed. Please try again.');
-    } finally {
-      setProcessing(false);
-    }
-  };
 
   const handleCODSubmit = async (e) => {
     e.preventDefault();
@@ -566,153 +425,7 @@ const CheckoutForm = ({ cart, cartTotal, clearCart, onOrderSuccess }) => {
         </Card.Body>
       </Card>
 
-      {/* Payment Method Card */}
-      <Card className="mb-4 border-0 shadow-sm" style={{ borderRadius: '16px', overflow: 'hidden' }}>
-        <Card.Header style={{
-          background: 'white',
-          borderBottom: `1px solid ${logoColors.light}`,
-          padding: '1rem 1.5rem'
-        }}>
-          <h5 style={{ color: logoColors.dark, fontWeight: '600', margin: 0 }}>
-            Payment Method
-          </h5>
-        </Card.Header>
-        <Card.Body style={{ padding: '1.5rem' }}>
-          <Form.Group>
-            <div className="d-flex gap-4 mb-3">
-              <Form.Check
-                type="radio"
-                id="creditCard"
-                name="paymentMethod"
-                label={
-                  <span style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                    <span style={{ fontWeight: '500' }}>Credit / Debit Card</span>
-                    <span style={{
-                      fontSize: '0.7rem',
-                      padding: '2px 8px',
-                      background: logoColors.softGradient,
-                      color: logoColors.primary,
-                      borderRadius: '12px'
-                    }}>
-                      Recommended
-                    </span>
-                  </span>
-                }
-                value="creditCard"
-                checked={formData.paymentMethod === 'creditCard'}
-                onChange={handleChange}
-                style={{ color: '#4A5568' }}
-              />
-              <Form.Check
-                type="radio"
-                id="cashOnDelivery"
-                name="paymentMethod"
-                label="Cash on Delivery"
-                value="cashOnDelivery"
-                checked={formData.paymentMethod === 'cashOnDelivery'}
-                onChange={handleChange}
-                style={{ color: '#4A5568' }}
-              />
-            </div>
-          </Form.Group>
 
-          {formData.paymentMethod === 'creditCard' && (
-            <div className="mt-4">
-              {/* Card Details Section */}
-              <div style={{ marginBottom: '1rem' }}>
-                <Form.Label style={{ color: '#4A5568', fontWeight: '500', marginBottom: '0.5rem' }}>
-                  Card Details
-                </Form.Label>
-
-                {/* Card Number Row */}
-                <div style={{ marginBottom: '1rem' }}>
-                  <div
-                    style={{
-                      border: `2px solid ${isCardFocused ? logoColors.primary : logoColors.light}`,
-                      borderRadius: '12px',
-                      padding: '0.75rem 1rem',
-                      backgroundColor: 'white',
-                      transition: 'all 0.2s ease',
-                      boxShadow: isCardFocused ? `0 0 0 4px ${logoColors.primary}20` : 'none'
-                    }}
-                  >
-                    <CardElement
-                      options={cardElementOptions}
-                      onFocus={() => setIsCardFocused(true)}
-                      onBlur={() => setIsCardFocused(false)}
-                    />
-                  </div>
-                </div>
-
-
-
-                {/* Card Icons Row */}
-                <div style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '1rem',
-                  marginTop: '0.5rem',
-                  padding: '0.5rem 0',
-                  borderTop: `1px solid ${logoColors.light}`
-                }}>
-                  <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
-                    <img
-                      src="https://a.storyblok.com/f/191576/120x54/5bb33c9a1d/visa-logo.png"
-                      alt="Visa"
-                      style={{ height: '24px', width: 'auto', opacity: 0.8 }}
-                      onError={(e) => e.target.style.display = 'none'}
-                    />
-                    <img
-                      src="https://a.storyblok.com/f/191576/120x54/8d6cc9a092/mastercard-logo.png"
-                      alt="Mastercard"
-                      style={{ height: '24px', width: 'auto', opacity: 0.8 }}
-                      onError={(e) => e.target.style.display = 'none'}
-                    />
-                    <img
-                      src="https://a.storyblok.com/f/191576/120x54/3c5f96e3e2/amex-logo.png"
-                      alt="American Express"
-                      style={{ height: '24px', width: 'auto', opacity: 0.8 }}
-                      onError={(e) => e.target.style.display = 'none'}
-                    />
-                  </div>
-                  <span style={{ color: '#A0AEC0', fontSize: '0.8rem', marginLeft: 'auto' }}>
-                    🔒 Secured by Stripe
-                  </span>
-                </div>
-              </div>
-
-              {/* Card Error Message */}
-              {cardError && (
-                <Alert variant="danger" style={{
-                  borderRadius: '8px',
-                  fontSize: '0.9rem',
-                  padding: '0.75rem 1rem',
-                  background: '#FEF2F2',
-                  border: '1px solid #FCA5A5',
-                  color: '#991B1B'
-                }}>
-                  <span style={{ fontWeight: '500' }}>Payment Error:</span> {cardError}
-                </Alert>
-              )}
-
-              {/* Security Note */}
-              <p style={{
-                fontSize: '0.8rem',
-                color: '#718096',
-                marginTop: '1rem',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '0.25rem'
-              }}>
-                <span>✓</span> Your card details are encrypted and secure
-                <span style={{ marginLeft: 'auto' }}>PCI-DSS Compliant</span>
-              </p>
-            </div>
-          )}
-
-          
-        </Card.Body>
-      </Card>
 
       {errors.submit && (
         <Alert variant="danger" className="mb-4" style={{ borderRadius: '8px' }}>
@@ -750,8 +463,8 @@ const CheckoutForm = ({ cart, cartTotal, clearCart, onOrderSuccess }) => {
           type="button"
           variant="primary"
           className="order-1 order-md-2 w-100 w-md-auto"
-          disabled={isSubmitting || processing || (formData.paymentMethod === 'creditCard' && !stripe)}
-          onClick={formData.paymentMethod === 'creditCard' ? handlePayment : handleCODSubmit}
+          disabled={isSubmitting}
+          onClick={handleCODSubmit}
           style={{
             background: 'linear-gradient(135deg, #FF4B5C 0%, #E63946 100%)',
             border: 'none',
@@ -766,26 +479,22 @@ const CheckoutForm = ({ cart, cartTotal, clearCart, onOrderSuccess }) => {
             transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)'
           }}
           onMouseEnter={(e) => {
-            if (!isSubmitting && !processing) {
+            if (!isSubmitting) {
               e.currentTarget.style.transform = 'translateY(-3px) scale(1.02)';
               e.currentTarget.style.boxShadow = '0 8px 25px rgba(230,57,70,0.45)';
               e.currentTarget.style.filter = 'brightness(1.1)';
             }
           }}
           onMouseLeave={(e) => {
-            if (!isSubmitting && !processing) {
+            if (!isSubmitting) {
               e.currentTarget.style.transform = 'translateY(0) scale(1)';
               e.currentTarget.style.boxShadow = '0 4px 15px rgba(230,57,70,0.3)';
               e.currentTarget.style.filter = 'none';
             }
           }}
         >
-          {processing ? (
-            <Spinner size="sm" animation="border" variant="light" />
-          ) : isSubmitting ? (
+          {isSubmitting ? (
             'Placing Order...'
-          ) : formData.paymentMethod === 'creditCard' ? (
-            `Pay Rs. ${finalAmount.toFixed(2)}`
           ) : (
             `Place Order - Rs. ${finalAmount.toFixed(2)}`
           )}
@@ -987,38 +696,7 @@ const OrderSuccessPage = ({ orderDetails, onContinueShopping }) => {
                 </h5>
               </Card.Header>
               <Card.Body style={{ padding: '1.5rem' }}>
-                <Row>
-                  <Col md={6}>
-                    <div style={{ marginBottom: '1rem' }}>
-                      <div style={{ fontSize: '0.85rem', color: '#718096', marginBottom: '0.25rem' }}>
-                        Payment Method
-                      </div>
-                      <div style={{ fontWeight: '500', color: '#2D3748' }}>
-                        {paymentMethod === 'card' ? 'Credit / Debit Card' : 'Cash on Delivery'}
-                      </div>
-                    </div>
-                  </Col>
-                  <Col md={6}>
-                    <div style={{ marginBottom: '1rem' }}>
-                      <div style={{ fontSize: '0.85rem', color: '#718096', marginBottom: '0.25rem' }}>
-                        Payment Status
-                      </div>
-                      <div>
-                        <span style={{
-                          display: 'inline-block',
-                          padding: '0.25rem 0.75rem',
-                          borderRadius: '20px',
-                          fontSize: '0.85rem',
-                          fontWeight: '500',
-                          background: isPaymentSuccess ? '#22c55e20' : '#f59e0b20',
-                          color: isPaymentSuccess ? '#22c55e' : '#f59e0b'
-                        }}>
-                          {isPaymentSuccess ? 'Paid' : 'Pending'}
-                        </span>
-                      </div>
-                    </div>
-                  </Col>
-                </Row>
+
               </Card.Body>
             </Card>
 
@@ -1063,43 +741,6 @@ const OrderSuccessPage = ({ orderDetails, onContinueShopping }) => {
         </Row>
       </Container>
     </Container>
-  );
-};
-
-// Stripe loading wrapper component
-const StripeElementsWrapper = ({ children, cart, cartTotal, clearCart, onOrderSuccess }) => {
-  const [stripeReady, setStripeReady] = useState(false);
-  const [stripeError, setStripeError] = useState(null);
-
-  useEffect(() => {
-    stripePromise
-      .then(() => setStripeReady(true))
-      .catch(err => setStripeError(err.message));
-  }, []);
-
-  if (stripeError) {
-    return (
-      <Alert variant="danger">
-        <h4>Payment System Unavailable</h4>
-        <p>We're unable to load the payment system. Please try again later.</p>
-        <p className="text-muted">Error: {stripeError}</p>
-      </Alert>
-    );
-  }
-
-  if (!stripeReady) {
-    return (
-      <div className="text-center py-5">
-        <Spinner animation="border" variant="primary" />
-        <p className="mt-3 text-muted">Loading payment system...</p>
-      </div>
-    );
-  }
-
-  return (
-    <Elements stripe={stripePromise}>
-      {React.cloneElement(children, { cart, cartTotal, clearCart, onOrderSuccess })}
-    </Elements>
   );
 };
 
@@ -1214,14 +855,12 @@ const CheckoutPage = () => {
               marginBottom: '1.5rem'
             }} />
 
-            <StripeElementsWrapper
+            <CheckoutForm
               cart={cart}
               cartTotal={cartTotal}
               clearCart={clearCart}
               onOrderSuccess={handleOrderSuccess}
-            >
-              <CheckoutForm />
-            </StripeElementsWrapper>
+            />
           </Col>
 
           <Col lg={4}>

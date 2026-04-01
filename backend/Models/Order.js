@@ -19,11 +19,8 @@ const orderSchema = new mongoose.Schema({
   totalAmount: { type: Number, required: true },
   appliedDiscount: { type: Number, default: 0 },
   discountBreakdown: { type: Array, default: [] },
-  couponCode: String,
+couponCode: String,
   paymentMethod: { type: String, default: 'cash-on-delivery' },
-  paymentStatus: { type: String, default: 'pending', enum: ['pending', 'paid', 'failed', 'refunded'] },
-  paymentIntentId: { type: String, default: null },
-  stripeCustomerEmail: { type: String, default: null },
   orderDate: { type: Date, default: Date.now },
   status: { type: String, default: 'pending' }
 });
