@@ -10,7 +10,8 @@ import {
   Alert,
   Badge
 } from 'react-bootstrap';
-import { FaShoppingCart, FaBoxOpen, FaStar } from 'react-icons/fa';
+import { FaShoppingCart, FaBoxOpen } from 'react-icons/fa';
+import RatingStars from '../components/RatingStars';
 import { CartContext } from '../components/CartContext';
 import FilterComponent from '../components/Filter';
 import '../App.css';
@@ -66,7 +67,7 @@ export default function Catalog() {
         const processedProducts = products.map(product => ({
           ...product,
           stock: product.stock !== undefined ? product.stock : 0,
-          rating: product.averageRating || 0,
+          averageRating: product.averageRating || 0,
           reviewCount: product.reviewCount || 0,
           price: product.discountedPrice || product.price || 0,
           createdAt: product.createdAt ? new Date(product.createdAt) : new Date()
@@ -110,9 +111,9 @@ export default function Catalog() {
       case 'price-low-high':
         filtered.sort((a, b) => a.price - b.price);
         break;
-      case 'rating-high':
-        filtered.sort((a, b) => b.rating - a.rating);
-        break;
+        case 'rating-high':
+          filtered.sort((a, b) => (b.averageRating || 0) - (a.averageRating || 0));
+          break;
       case 'newest':
         filtered.sort((a, b) => b.createdAt - a.createdAt);
         break;
@@ -325,21 +326,7 @@ export default function Catalog() {
           {/* Rating */}
           <div className="rating-wrapper mb-1">
             <div className="rating d-flex align-items-center">
-              <FaStar style={{ color: logoColors.primary, fontSize: isMobile ? '0.6rem' : '0.7rem' }} />
-              <span
-                className="ms-1"
-                style={{ color: '#4A5568', fontSize: isMobile ? '0.65rem' : '0.7rem' }}
-              >
-                {product.rating.toFixed(1)}
-              </span>
-              {product.reviewCount > 0 && (
-                <small
-                  className="text-muted ms-1"
-                  style={{ color: '#718096', fontSize: isMobile ? '0.6rem' : '0.65rem' }}
-                >
-                  ({product.reviewCount})
-                </small>
-              )}
+              <RatingStars rating={product.averageRating || 0} reviewCount={product.reviewCount || 0} size="small" />
             </div>
           </div>
 

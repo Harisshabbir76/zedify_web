@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const Product = require('../Models/Product');
 const Category = require('../Models/Category');
+const Review = require('../Models/Review');
 const multer = require('multer');
 const { storage } = require('../config/cloudinary');
 
@@ -79,7 +80,7 @@ router.delete('/api/categories/:id', async (req, res) => {
   }
 });
 
-// GET /category/:categoryName - Get products by category
+// GET /category/:categoryName - Get products by category with ratings
 router.get('/category/:categoryName', async (req, res) => {
   const categoryName = req.params.categoryName.toLowerCase().trim().replace(/-/g, ' ');
 
@@ -87,12 +88,23 @@ router.get('/category/:categoryName', async (req, res) => {
     const products = await Product.find({
       category: { $regex: new RegExp(`^${categoryName}$`, 'i') }
     }).sort({ createdAt: -1 });
+    
+    // Add ratings for each product
+    const productsWithRatings = await Promise.all(products.map(async (product) => {
+      const reviews = await Review.find({ product: product._id });
+      const averageRating = reviews.length > 0 ? reviews.reduce((acc, review) => acc + review.rating, 0) / reviews.length : 0;
+      return {
+        ...product.toObject(),
+        averageRating: parseFloat(averageRating.toFixed(1)),
+        reviewCount: reviews.length
+      };
+    }));
 
-    if (!products.length) {
+    if (!productsWithRatings.length) {
       return res.status(404).json({ message: 'No products found in this category' });
     }
 
-    res.json(products);
+    res.json(productsWithRatings);
   } catch (err) {
     console.error('Error fetching category products:', err);
     res.status(500).json({ message: 'Server Error' });

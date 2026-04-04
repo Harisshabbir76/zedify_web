@@ -1,11 +1,33 @@
-# Task: Add WhatsApp Admin Number .env Variable
+# Dynamic Product Ratings Implementation Plan
 
-## Approved Plan Steps:
-1. ✅ [Complete] Create TODO.md with plan breakdown
-2. [Pending] Add WHATSAPP_ADMIN_NUMBER to backend/.env (placeholder, user to update real number)
-3. [Pending] Update backend/routes/whatsappRoutes.js to use process.env.WHATSAPP_ADMIN_NUMBER
-4. [Pending] Optionally update frontend WhatsAppButton if needed for admin notifications
-5. [Pending] Test changes and complete task
+## Status: ✅ Plan Approved - In Progress
 
-**Status:** Plan approved. Awaiting real admin number from user to finalize .env. Next: Add env var (placeholder for now).
+## Steps:
 
+### 1. Backend Updates ✅ COMPLETE
+- [x] Add ratings to `/catalog`, `/new-arrival`, `/search` endpoints in `backend/routes/productRoutes.js` 
+- [x] Add ratings to `/category/:categoryName` in `backend/routes/categoryRoutes.js`
+- [ ] Test APIs return `averageRating` and `reviewCount` fields
+
+**Next:** ✅ Created `frontend/src/components/RatingStars.js`
+**Next:** Update frontend components
+
+**Next:** Frontend RatingStars component
+
+### 2. Frontend - Create Reusable Component ✅ COMPLETE
+- [x] Created `frontend/src/components/RatingStars.js`
+
+### 3. Frontend Updates - Remove Hardcoded Ratings ✅ COMPLETE
+- [x] `frontend/src/components/new-arrival.js` 
+- [x] `frontend/src/pages/category/[categoryName]/app.js`
+- [x] `frontend/src/components/SearchResults.js`
+- [x] `frontend/src/pages/catalog.js`
+- [ ] `frontend/src/components/dashboardCatalog.js` (bonus, optional)
+
+### 4. Testing & Verification [PENDING]
+- [ ] Backend: Test `/catalog`, `/new-arrival`, `/search` APIs have ratings data
+- [ ] Frontend: Verify dynamic stars on all product list pages
+- [ ] Restart backend/frontend servers
+- [ ] ✅ Task Complete - attempt_completion
+
+**Next Step:** Backend `productRoutes.js` updates

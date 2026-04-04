@@ -11,7 +11,8 @@ import {
   Badge,
   Button
 } from 'react-bootstrap';
-import { FaShoppingCart, FaBoxOpen, FaStar } from 'react-icons/fa';
+import { FaShoppingCart, FaBoxOpen } from 'react-icons/fa';
+import RatingStars from './RatingStars';
 import { CartContext } from '../components/CartContext';
 import './heroSlider.css';
 
@@ -45,8 +46,7 @@ const SearchResults = () => {
 
         const products = response.data.map(product => ({
           ...product,
-          stock: product.stock || Math.floor(Math.random() * 16) + 5,
-          rating: product.rating || (Math.random() * 1 + 4).toFixed(1)
+          stock: product.stock || Math.floor(Math.random() * 16) + 5
         }));
 
         setResults(products);
@@ -277,8 +277,7 @@ const ProductCard = ({ product, onAddToCart, onViewDetails }) => {
               </span>
             </div>
             <div className="rating" style={{ fontSize: '0.85rem' }}>
-              <FaStar style={{ color: logoColors.primary }} />
-              <span className="ms-1" style={{ color: '#4A5568' }}>{product.rating}</span>
+              <RatingStars rating={product.averageRating || 0} reviewCount={product.reviewCount || 0} />
             </div>
           </div>
           <button

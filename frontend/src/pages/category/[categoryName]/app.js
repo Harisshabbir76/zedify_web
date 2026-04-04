@@ -2,7 +2,8 @@ import React, { useEffect, useState, useContext } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { Container, Row, Col, Card, Spinner, Alert, Button, Badge } from 'react-bootstrap';
-import { FaShoppingCart, FaBoxOpen, FaStar, FaSearch } from 'react-icons/fa';
+import { FaShoppingCart, FaBoxOpen, FaSearch } from 'react-icons/fa';
+import RatingStars from '../../../components/RatingStars';
 import { CartContext } from '../../../components/CartContext';
 import FilterComponent from '../../../components/Filter';
 import '../../../App.css';
@@ -52,7 +53,6 @@ export default function CategoryProducts() {
           const productsWithDefaults = res.data.map(product => ({
             ...product,
             stock: product.stock !== undefined ? product.stock : Math.floor(Math.random() * 16) + 5,
-            rating: product.rating || (Math.random() * 1 + 4).toFixed(1),
             createdAt: product.createdAt ? new Date(product.createdAt) : new Date()
           }));
           setProducts(productsWithDefaults);
@@ -85,7 +85,7 @@ export default function CategoryProducts() {
           sorted.sort((a, b) => a.discountedPrice - b.discountedPrice);
           break;
         case 'rating-high':
-          sorted.sort((a, b) => b.rating - a.rating);
+          sorted.sort((a, b) => (b.averageRating || 0) - (a.averageRating || 0));
           break;
         case 'newest':
           sorted.sort((a, b) => b.createdAt - a.createdAt);
@@ -297,13 +297,7 @@ export default function CategoryProducts() {
           {/* Rating */}
           <div className="rating-wrapper mb-1">
             <div className="rating d-flex align-items-center">
-              <FaStar style={{ color: logoColors.primary, fontSize: isMobile ? '0.6rem' : '0.7rem' }} />
-              <span
-                className="ms-1"
-                style={{ color: '#4A5568', fontSize: isMobile ? '0.65rem' : '0.7rem' }}
-              >
-                {product.rating}
-              </span>
+              <RatingStars rating={product.averageRating || 0} reviewCount={product.reviewCount || 0} size="small" />
             </div>
           </div>
 

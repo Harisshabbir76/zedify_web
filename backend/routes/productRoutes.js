@@ -61,26 +61,32 @@ router.post('/dashboard/add-product', upload.array('images', 10), async (req, re
   }
 });
 
-// GET /catalog - Get all products
+// GET /catalog - Get all products with ratings
 router.get('/catalog', async (req, res) => {
   try {
     console.log('Fetching products from database...');
     const products = await Product.find().sort({ createdAt: -1 });
-    console.log('Products found:', products);
+    
+    // Add ratings for each product
+    const productsWithRatings = await Promise.all(products.map(async (product) => {
+      const reviews = await Review.find({ product: product._id });
+      const averageRating = reviews.length > 0 ? reviews.reduce((acc, review) => acc + review.rating, 0) / reviews.length : 0;
+      return {
+        ...product.toObject(),
+        averageRating: parseFloat(averageRating.toFixed(1)),
+        reviewCount: reviews.length
+      };
+    }));
 
-    if (!Array.isArray(products)) {
-      console.error('Products is not an array:', typeof products);
-      return res.status(500).json({ error: 'Unexpected data format', data: [] });
-    }
-
-    res.status(200).json(products);
+    console.log('Products with ratings:', productsWithRatings.length);
+    res.status(200).json(productsWithRatings);
   } catch (err) {
     console.error('Error in /catalog:', err);
     res.status(500).json({ error: 'Failed to fetch products', data: [] });
   }
 });
 
-// GET /new-arrival - Get new arrival products
+// GET /new-arrival - Get new arrival products with ratings
 router.get('/new-arrival', async (req, res) => {
   try {
     const thirtyDaysAgo = new Date();
@@ -89,14 +95,25 @@ router.get('/new-arrival', async (req, res) => {
     const products = await Product.find({
       createdAt: { $gte: thirtyDaysAgo }
     }).sort({ createdAt: -1 }).limit(10);
+    
+    // Add ratings
+    const productsWithRatings = await Promise.all(products.map(async (product) => {
+      const reviews = await Review.find({ product: product._id });
+      const averageRating = reviews.length > 0 ? reviews.reduce((acc, review) => acc + review.rating, 0) / reviews.length : 0;
+      return {
+        ...product.toObject(),
+        averageRating: parseFloat(averageRating.toFixed(1)),
+        reviewCount: reviews.length
+      };
+    }));
 
-    res.json(products);
+    res.json(productsWithRatings);
   } catch (err) {
     res.status(500).json({ error: "Server Error" });
   }
 });
 
-// GET /search - Search products
+// GET /search - Search products with ratings
 router.get('/search', async (req, res) => {
   try {
     let { query } = req.query;
@@ -115,12 +132,23 @@ router.get('/search', async (req, res) => {
     ]);
 
     const products = await Product.find({ $or: regexConditions }).limit(20);
+    
+    // Add ratings
+    const productsWithRatings = await Promise.all(products.map(async (product) => {
+      const reviews = await Review.find({ product: product._id });
+      const averageRating = reviews.length > 0 ? reviews.reduce((acc, review) => acc + review.rating, 0) / reviews.length : 0;
+      return {
+        ...product.toObject(),
+        averageRating: parseFloat(averageRating.toFixed(1)),
+        reviewCount: reviews.length
+      };
+    }));
 
-    if (products.length === 0) {
+    if (productsWithRatings.length === 0) {
       console.log('No matches found for:', keywords);
     }
 
-    res.json(products);
+    res.json(productsWithRatings);
   } catch (error) {
     console.error('Search error:', error);
     res.status(500).json({ message: 'Server error during search' });
