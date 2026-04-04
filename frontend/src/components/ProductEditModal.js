@@ -5,13 +5,13 @@ import { FaTrash, FaUpload } from 'react-icons/fa';
 
 // Navbar color palette
 const logoColors = {
-  primary: '#fe7e8b', // Navbar primary color
-  secondary: '#e65c70', // Navbar secondary color
-  light: '#ffd1d4', // Navbar light color
-  dark: '#d64555', // Navbar dark color
-  background: '#fff5f6', // Super light - almost white
-  gradient: 'linear-gradient(135deg, #fe7e8b 0%, #e65c70 100%)', // Navbar gradient
-  softGradient: 'linear-gradient(135deg, #fff5f6 0%, #ffd1d4 100%)', // Very soft gradient
+  primary: '#fe7e8b',
+  secondary: '#e65c70',
+  light: '#ffd1d4',
+  dark: '#d64555',
+  background: '#fff5f6',
+  gradient: 'linear-gradient(135deg, #fe7e8b 0%, #e65c70 100%)',
+  softGradient: 'linear-gradient(135deg, #fff5f6 0%, #ffd1d4 100%)',
 };
 
 const ProductEditModal = ({ show, product, onClose, onSave }) => {
@@ -22,37 +22,36 @@ const ProductEditModal = ({ show, product, onClose, onSave }) => {
     description: '',
     category: '',
     stock: 0,
-    images: []
+    images: [],
+    isFeatured: false
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [imageUploading, setImageUploading] = useState(false);
   const [newImages, setNewImages] = useState([]);
   const [isDragging, setIsDragging] = useState(false);
-  const [imagePreview, setImagePreview] = useState(null);
 
   useEffect(() => {
     if (product) {
       setFormData({
         name: product.name || '',
-        price: product.price || 0,
+        price: product.originalPrice || 0,
         discountedPrice: product.discountedPrice || 0,
         description: product.description || '',
         category: (typeof product.category === 'object' && product.category !== null) ? (product.category.name || '') : (product.category || ''),
         stock: product.stock || 0,
-        images: product.image || []
+        images: product.image || [],
+        isFeatured: product.isFeatured || false
       });
       setNewImages([]);
     }
   }, [product]);
 
   const handleChange = (e) => {
-    const { name, value } = e.target;
+    const { name, value, type, checked } = e.target;
     setFormData(prev => ({
       ...prev,
-      [name]: name === 'price' || name === 'discountedPrice' || name === 'stock'
-        ? Number(value)
-        : value
+      [name]: type === 'checkbox' ? checked : (name === 'price' || name === 'discountedPrice' || name === 'stock' ? Number(value) : value)
     }));
   };
 
@@ -65,13 +64,20 @@ const ProductEditModal = ({ show, product, onClose, onSave }) => {
     }
 
     if (files.length === 0) return;
+    
+    setImageUploading(true);
+    
     // Store new image files as object URLs for preview
     const previewUrls = files.map(file => ({ file, url: URL.createObjectURL(file) }));
     setNewImages(prev => [...prev, ...previewUrls]);
+    
+    setImageUploading(false);
   };
 
   const removeImage = (index, isNewImage) => {
     if (isNewImage) {
+      // Revoke object URL to avoid memory leaks
+      URL.revokeObjectURL(newImages[index].url);
       setNewImages(prev => prev.filter((_, i) => i !== index));
     } else {
       setFormData(prev => ({
@@ -87,31 +93,23 @@ const ProductEditModal = ({ show, product, onClose, onSave }) => {
     setError(null);
 
     try {
-      const data = new FormData();
-      // Append text fields
-      Object.entries({
+      // Prepare update data
+      const updateData = {
         name: formData.name,
         description: formData.description,
         category: formData.category,
         stock: formData.stock,
         originalPrice: formData.price,
         discountedPrice: formData.discountedPrice,
-        existingImages: JSON.stringify(formData.images)
-      }).forEach(([key, val]) => data.append(key, val));
-      // Append new image files
-      newImages.forEach(({ file }) => data.append('newImages', file));
+        image: formData.images,
+        isFeatured: formData.isFeatured
+      };
+
+      console.log('Sending update with isFeatured:', updateData.isFeatured);
 
       const response = await axios.put(
         `${process.env.REACT_APP_API_URL}/update/${product._id}`,
-        {
-          name: formData.name,
-          description: formData.description,
-          category: formData.category,
-          stock: formData.stock,
-          originalPrice: formData.price,
-          discountedPrice: formData.discountedPrice,
-          image: formData.images  // keep existing images only (new uploads need separate endpoint)
-        },
+        updateData,
         {
           headers: {
             'Authorization': `Bearer ${localStorage.getItem('token')}`
@@ -119,9 +117,24 @@ const ProductEditModal = ({ show, product, onClose, onSave }) => {
         }
       );
 
+      console.log('Update response:', response.data);
+      
+      // If there are new images to upload, handle them separately
+      if (newImages.length > 0) {
+        const imageFormData = new FormData();
+        newImages.forEach(({ file }) => {
+          imageFormData.append('images', file);
+        });
+        
+        // You might need an additional endpoint to add images to existing product
+        // For now, we'll just show a warning
+        console.warn('New images selected but need separate upload endpoint');
+      }
+
       onSave(response.data);
       onClose();
     } catch (err) {
+      console.error('Update error:', err);
       setError(err.response?.data?.message || 'Failed to update product');
     } finally {
       setLoading(false);
@@ -182,7 +195,7 @@ const ProductEditModal = ({ show, product, onClose, onSave }) => {
               <Row>
                 <Col md={6}>
                   <Form.Group className="mb-3">
-                    <Form.Label style={{ color: logoColors.dark, fontWeight: '500' }}>Price</Form.Label>
+                    <Form.Label style={{ color: logoColors.dark, fontWeight: '500' }}>Original Price</Form.Label>
                     <Form.Control
                       type="number"
                       name="price"
@@ -253,6 +266,28 @@ const ProductEditModal = ({ show, product, onClose, onSave }) => {
                 </Col>
               </Row>
 
+              {/* Featured Product Toggle */}
+              <Form.Group className="mb-3">
+                <div style={{
+                  background: logoColors.softGradient,
+                  padding: '1rem',
+                  borderRadius: '8px',
+                  border: `1px solid ${logoColors.light}`
+                }}>
+                  <Form.Check
+                    type="switch"
+                    name="isFeatured"
+                    label="Feature this product on homepage"
+                    checked={formData.isFeatured}
+                    onChange={handleChange}
+                    style={{ fontWeight: '500', fontSize: '1rem' }}
+                  />
+                  <Form.Text style={{ color: '#718096', fontSize: '0.9rem', marginTop: '0.5rem', display: 'block' }}>
+                    Enable to show this product in Featured Products section on home page
+                  </Form.Text>
+                </div>
+              </Form.Group>
+
               <Form.Group className="mb-3">
                 <Form.Label style={{ color: logoColors.dark, fontWeight: '500' }}>Description</Form.Label>
                 <Form.Control
@@ -280,47 +315,41 @@ const ProductEditModal = ({ show, product, onClose, onSave }) => {
                   background: logoColors.lighterBg
                 }}>
                   {/* Existing Images */}
-                  <div className="mb-3">
-                    <h6 style={{ color: logoColors.dark, fontWeight: '600' }}>Current Images</h6>
-                    <div className="d-flex flex-wrap gap-2">
-                      {formData.images.map((img, index) => (
-                        <div key={`existing-${index}`} className="position-relative" style={{ width: '100px' }}>
-                          <Image
-                            src={getImageUrl(img)}
-                            thumbnail
-                            style={{
-                              width: '100%',
-                              height: '100px',
-                              objectFit: 'cover',
-                              borderColor: logoColors.light
-                            }}
-                          />
-                          <Button
-                            variant="danger"
-                            size="sm"
-                            className="position-absolute top-0 end-0 m-1"
-                            onClick={() => removeImage(index, false)}
-                            style={{
-                              background: '#dc3545',
-                              border: 'none',
-                              padding: '0.25rem 0.5rem',
-                              borderRadius: '4px'
-                            }}
-                            onMouseEnter={(e) => {
-                              e.target.style.opacity = '0.9';
-                              e.target.style.transform = 'scale(1.05)';
-                            }}
-                            onMouseLeave={(e) => {
-                              e.target.style.opacity = '1';
-                              e.target.style.transform = 'scale(1)';
-                            }}
-                          >
-                            <FaTrash />
-                          </Button>
-                        </div>
-                      ))}
+                  {formData.images.length > 0 && (
+                    <div className="mb-3">
+                      <h6 style={{ color: logoColors.dark, fontWeight: '600' }}>Current Images</h6>
+                      <div className="d-flex flex-wrap gap-2">
+                        {formData.images.map((img, index) => (
+                          <div key={`existing-${index}`} className="position-relative" style={{ width: '100px' }}>
+                            <Image
+                              src={getImageUrl(img)}
+                              thumbnail
+                              style={{
+                                width: '100%',
+                                height: '100px',
+                                objectFit: 'cover',
+                                borderColor: logoColors.light
+                              }}
+                            />
+                            <Button
+                              variant="danger"
+                              size="sm"
+                              className="position-absolute top-0 end-0 m-1"
+                              onClick={() => removeImage(index, false)}
+                              style={{
+                                background: '#dc3545',
+                                border: 'none',
+                                padding: '0.25rem 0.5rem',
+                                borderRadius: '4px'
+                              }}
+                            >
+                              <FaTrash />
+                            </Button>
+                          </div>
+                        ))}
+                      </div>
                     </div>
-                  </div>
+                  )}
 
                   {/* New Images */}
                   <div 
@@ -350,45 +379,39 @@ const ProductEditModal = ({ show, product, onClose, onSave }) => {
                       transition: 'all 0.3s ease'
                     }}
                   >
-                    <h6 style={{ color: logoColors.dark, fontWeight: '600' }}>New Images</h6>
-                    <div className="d-flex flex-wrap gap-2 mb-2">
-                      {newImages.map((img, index) => (
-                        <div key={`new-${index}`} className="position-relative" style={{ width: '100px' }}>
-                          <Image
-                            src={img.url}
-                            thumbnail
-                            style={{
-                              width: '100%',
-                              height: '100px',
-                              objectFit: 'cover',
-                              borderColor: logoColors.light
-                            }}
-                          />
-                          <Button
-                            variant="danger"
-                            size="sm"
-                            className="position-absolute top-0 end-0 m-1"
-                            onClick={() => removeImage(index, true)}
-                            style={{
-                              background: '#dc3545',
-                              border: 'none',
-                              padding: '0.25rem 0.5rem',
-                              borderRadius: '4px'
-                            }}
-                            onMouseEnter={(e) => {
-                              e.target.style.opacity = '0.9';
-                              e.target.style.transform = 'scale(1.05)';
-                            }}
-                            onMouseLeave={(e) => {
-                              e.target.style.opacity = '1';
-                              e.target.style.transform = 'scale(1)';
-                            }}
-                          >
-                            <FaTrash />
-                          </Button>
-                        </div>
-                      ))}
-                    </div>
+                    <h6 style={{ color: logoColors.dark, fontWeight: '600' }}>Add New Images</h6>
+                    {newImages.length > 0 && (
+                      <div className="d-flex flex-wrap gap-2 mb-2">
+                        {newImages.map((img, index) => (
+                          <div key={`new-${index}`} className="position-relative" style={{ width: '100px' }}>
+                            <Image
+                              src={img.url}
+                              thumbnail
+                              style={{
+                                width: '100%',
+                                height: '100px',
+                                objectFit: 'cover',
+                                borderColor: logoColors.light
+                              }}
+                            />
+                            <Button
+                              variant="danger"
+                              size="sm"
+                              className="position-absolute top-0 end-0 m-1"
+                              onClick={() => removeImage(index, true)}
+                              style={{
+                                background: '#dc3545',
+                                border: 'none',
+                                padding: '0.25rem 0.5rem',
+                                borderRadius: '4px'
+                              }}
+                            >
+                              <FaTrash />
+                            </Button>
+                          </div>
+                        ))}
+                      </div>
+                    )}
                   </div>
 
                   {/* Upload Button */}
@@ -396,7 +419,6 @@ const ProductEditModal = ({ show, product, onClose, onSave }) => {
                     <Form.Label
                       htmlFor="image-upload"
                       className="btn w-100"
-                      disabled={imageUploading}
                       style={{
                         background: logoColors.gradient,
                         color: 'white',
@@ -404,7 +426,9 @@ const ProductEditModal = ({ show, product, onClose, onSave }) => {
                         padding: '0.5rem 1rem',
                         borderRadius: '8px',
                         fontWeight: '500',
-                        transition: 'all 0.3s ease'
+                        transition: 'all 0.3s ease',
+                        cursor: imageUploading ? 'not-allowed' : 'pointer',
+                        opacity: imageUploading ? 0.7 : 1
                       }}
                       onMouseEnter={(e) => {
                         if (!imageUploading) {
@@ -426,7 +450,7 @@ const ProductEditModal = ({ show, product, onClose, onSave }) => {
                       ) : (
                         <>
                           <FaUpload className="me-2" />
-                          Upload Images
+                          Upload New Images
                         </>
                       )}
                     </Form.Label>
@@ -440,7 +464,7 @@ const ProductEditModal = ({ show, product, onClose, onSave }) => {
                       disabled={imageUploading}
                     />
                     <Form.Text className="text-muted" style={{ color: '#718096' }}>
-                      Upload product images (max 10)
+                      Upload additional product images
                     </Form.Text>
                   </div>
                 </div>

@@ -20,7 +20,6 @@ import {
   FiDollarSign,
   FiPercent,
   FiHash,
-  FiLink,
   FiImage,
   FiUpload,
   FiX
@@ -28,13 +27,13 @@ import {
 
 // Navbar color palette
 const logoColors = {
-  primary: '#fe7e8b', // Navbar primary color
-  secondary: '#e65c70', // Navbar secondary color
-  light: '#ffd1d4', // Navbar light color
-  dark: '#d64555', // Navbar dark color
-  background: '#fff5f6', // Super light - almost white
-  gradient: 'linear-gradient(135deg, #fe7e8b 0%, #e65c70 100%)', // Navbar gradient
-  softGradient: 'linear-gradient(135deg, #fff5f6 0%, #ffd1d4 100%)', // Very soft gradient
+  primary: '#fe7e8b',
+  secondary: '#e65c70',
+  light: '#ffd1d4',
+  dark: '#d64555',
+  background: '#fff5f6',
+  gradient: 'linear-gradient(135deg, #fe7e8b 0%, #e65c70 100%)',
+  softGradient: 'linear-gradient(135deg, #fff5f6 0%, #ffd1d4 100%)',
 };
 
 export default function AddProduct() {
@@ -46,7 +45,8 @@ export default function AddProduct() {
     category: '',
     stock: '',
     sizes: '',
-    colors: ''
+    colors: '',
+    isFeatured: false
   });
   const [categories, setCategories] = useState([]);
   const [images, setImages] = useState([]);
@@ -59,10 +59,10 @@ export default function AddProduct() {
   const [isAuthorized, setIsAuthorized] = useState(false);
 
   const handleChange = (e) => {
-    const { name, value } = e.target;
+    const { name, value, type, checked } = e.target;
     setFormData(prev => ({
       ...prev,
-      [name]: value
+      [name]: type === 'checkbox' ? checked : value
     }));
   };
 
@@ -103,8 +103,15 @@ export default function AddProduct() {
     setSuccess(null);
 
     const data = new FormData();
+    
+    // Append all form data including isFeatured
     Object.entries(formData).forEach(([key, value]) => {
-      data.append(key, value);
+      // Convert isFeatured to string for FormData
+      if (key === 'isFeatured') {
+        data.append(key, value ? 'true' : 'false');
+      } else {
+        data.append(key, value);
+      }
     });
 
     for (let i = 0; i < images.length; i++) {
@@ -112,21 +119,27 @@ export default function AddProduct() {
     }
 
     try {
-      await axios.post(`${process.env.REACT_APP_API_URL}/dashboard/add-product`, data, {
+      const response = await axios.post(`${process.env.REACT_APP_API_URL}/dashboard/add-product`, data, {
         headers: {
           'Content-Type': 'multipart/form-data',
           'Authorization': `Bearer ${localStorage.getItem('token')}`
         }
       });
 
+      console.log('Product added with isFeatured:', formData.isFeatured);
       setSuccess("Product Added Successfully");
+      
+      // Reset form
       setFormData({
         name: '',
         description: '',
         originalPrice: '',
         discountedPrice: '',
         category: '',
-        stock: ''
+        stock: '',
+        sizes: '',
+        colors: '',
+        isFeatured: false
       });
 
       // Clean up image previews
@@ -134,7 +147,7 @@ export default function AddProduct() {
       setImages([]);
       setImagePreviews([]);
 
-      // Redirect to dashboard catalog after a short delay to show success message
+      // Redirect to dashboard catalog after a short delay
       setTimeout(() => {
         navigate('/dashboard/catalog');
       }, 2000);
@@ -171,6 +184,7 @@ export default function AddProduct() {
         setIsLoading(false);
       }
     };
+    
     const fetchCategories = async () => {
       try {
         const res = await axios.get(`${process.env.REACT_APP_API_URL}/api/categories`);
@@ -559,6 +573,28 @@ export default function AddProduct() {
                   </Col>
                 </Row>
               </div>
+
+              {/* Featured Product Toggle */}
+              <Form.Group className="mb-4">
+                <div style={{
+                  background: logoColors.softGradient,
+                  padding: '1.5rem',
+                  borderRadius: '12px',
+                  border: `1px solid ${logoColors.light}`
+                }}>
+                  <Form.Check
+                    type="switch"
+                    name="isFeatured"
+                    label="Feature this product on homepage"
+                    checked={formData.isFeatured}
+                    onChange={handleChange}
+                    style={{ fontWeight: '500', fontSize: '1rem' }}
+                  />
+                  <Form.Text style={{ color: '#718096', fontSize: '0.9rem', marginTop: '0.5rem', display: 'block' }}>
+                    Enable to show this product in the Featured Products section on the home page
+                  </Form.Text>
+                </div>
+              </Form.Group>
 
               <Form.Group className="mb-4">
                 <Form.Label style={{ color: logoColors.dark, fontWeight: '500' }}>

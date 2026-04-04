@@ -17,9 +17,13 @@ function slugify(text) {
     .replace(/--+/g, '-');      // Replace multiple - with single -
 }
 
-// POST /dashboard/add-product - Add a new product
+// In your product routes file (where you have /dashboard/add-product)
 router.post('/dashboard/add-product', upload.array('images', 10), async (req, res) => {
-  let { name, description, originalPrice, discountedPrice, category, stock, sizes, colors } = req.body;
+  let { name, description, originalPrice, discountedPrice, category, stock, sizes, colors, isFeatured } = req.body;
+  
+  // Convert isFeatured to boolean properly
+  isFeatured = isFeatured === 'true' || isFeatured === true;
+  
   const imagePaths = req.files.map(file => file.path);
 
   try {
@@ -50,7 +54,8 @@ router.post('/dashboard/add-product', upload.array('images', 10), async (req, re
       category,
       stock,
       slug: uniqueSlug,
-      variants: Object.keys(variants).length > 0 ? variants : undefined
+      variants: Object.keys(variants).length > 0 ? variants : undefined,
+      isFeatured: isFeatured  // Make sure this is saved
     });
 
     await newProduct.save();
@@ -188,11 +193,17 @@ router.get('/product/:id', async (req, res) => {
 });
 
 // PUT /update/:id - Update a product
+// In your update route
 router.put('/update/:id', async (req, res) => {
   try {
     const updateData = { ...req.body };
+    
+    // Convert isFeatured to boolean if it exists
+    if (updateData.isFeatured !== undefined) {
+      updateData.isFeatured = updateData.isFeatured === 'true' || updateData.isFeatured === true;
+    }
 
-    // If name is being updated, regenerate the slug if it's missing or if the name changed
+    // If name is being updated, regenerate the slug
     if (updateData.name) {
       const existingProduct = await Product.findById(req.params.id);
       if (existingProduct && (existingProduct.name !== updateData.name || !existingProduct.slug)) {
@@ -212,11 +223,13 @@ router.put('/update/:id', async (req, res) => {
       updateData,
       { new: true }
     );
+    
     if (!product) {
       return res.status(404).json({ message: 'Product not found' });
     }
     res.json(product);
   } catch (error) {
+    console.error('Update error:', error);
     res.status(500).json({ message: error.message });
   }
 });
@@ -241,6 +254,36 @@ router.get('/api/products/list', async (req, res) => {
     res.json(products);
   } catch (err) {
     res.status(500).json({ message: 'Error fetching products' });
+  }
+});
+
+// GET /featured-products - Get featured products with ratings
+// GET /featured-products - Get featured products with ratings
+router.get('/featured-products', async (req, res) => {
+  try {
+    console.log('Fetching featured products...');
+    
+    // Find products where isFeatured is true
+    const products = await Product.find({ isFeatured: true }).sort({ createdAt: -1 }).limit(8);
+    
+    console.log(`Found ${products.length} featured products`);
+    
+    // Add ratings for each product
+    const productsWithRatings = await Promise.all(products.map(async (product) => {
+      const reviews = await Review.find({ product: product._id });
+      const averageRating = reviews.length > 0 ? reviews.reduce((acc, review) => acc + review.rating, 0) / reviews.length : 0;
+      return {
+        ...product.toObject(),
+        averageRating: parseFloat(averageRating.toFixed(1)),
+        reviewCount: reviews.length
+      };
+    }));
+
+    console.log('Featured products with ratings:', productsWithRatings.length);
+    res.status(200).json(productsWithRatings);
+  } catch (err) {
+    console.error('Error in /featured-products:', err);
+    res.status(500).json({ error: 'Failed to fetch featured products', data: [] });
   }
 });
 

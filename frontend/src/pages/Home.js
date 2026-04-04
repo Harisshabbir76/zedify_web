@@ -3,6 +3,7 @@ import Categories from '../components/category'
 import HomeFeaturedCategories from '../components/HomeFeaturedCategories'
 import TopRatedProducts from '../components/TopRatedProducts'
 import LatestBundles from '../components/LatestBundles'
+import FeaturedProducts from '../components/FeaturedProducts'
 import FAQs from '../components/FAQs'
 import { Link } from 'react-router-dom'
 import { FiArrowRight } from 'react-icons/fi';
@@ -150,6 +151,12 @@ export default function Home() {
       <TopRatedProducts />
 
       {/* Divider after Top Products */}
+      <div style={sectionDividerStyle}></div>
+
+      {/* Featured Products */}
+      <FeaturedProducts />
+
+      {/* Divider after Featured Products */}
       <div style={sectionDividerStyle}></div>
 
       {/* Latest Bundles - Shows latest bundles */}

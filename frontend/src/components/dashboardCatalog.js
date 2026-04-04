@@ -224,6 +224,24 @@ export default function AdminProductsDashboard() {
               {Math.round(100 - (product.discountedPrice / product.originalPrice) * 100)}% OFF
             </div>
           )}
+          {product.isFeatured && (
+            <Badge
+              bg="warning"
+              style={{
+                position: 'absolute',
+                top: '10px',
+                left: '10px',
+                padding: '4px 8px',
+                fontSize: '0.7rem',
+                zIndex: 2,
+                background: logoColors.gradient,
+                border: 'none',
+                color: 'white'
+              }}
+            >
+              Featured
+            </Badge>
+          )}
           <Badge
             bg={product.stock > 0 ? "success" : "danger"}
             style={{

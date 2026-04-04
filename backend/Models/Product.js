@@ -12,10 +12,15 @@ const productSchema = new mongoose.Schema({
     sizes: [String],
     colors: [String]
   },
+  isFeatured: {
+    type: Boolean,
+    default: false
+  },
   averageRating: {
     type: Number,
     default: 0
   },
+
   reviewCount: {
     type: Number,
     default: 0
